@@ -5,7 +5,7 @@ Local-only React + FastAPI research reader. Follow docs/REQUIREMENTS.md for scop
 - Canonical data models: backend/app/models.py; exported schemas: docs/schemas/.
 - Test backend: `backend/.venv/Scripts/python.exe -m pytest backend/tests --basetemp=tmp/pytest-check` from root with `PYTHONPATH=backend`, or run from backend. Create tmp/ first.
 - Frontend: `cd frontend; npm run build`; copy offline PDF.js resources with `npm run prepare:pdf` after dependency installation.
-- Never overwrite papers/**/notes.md, study.json, qa.jsonl, translations/, corrections.jsonl or concepts/ during report regeneration. Publish via app.reports.publish_report or the paper skill helper. Explicit translation jobs may update their managed translation cache only after source hash and schema validation.
+- Never overwrite papers/**/notes.md, study.json, qa.jsonl, translations/, corrections.jsonl or concepts/ during report regeneration. Publish via app.reports.publish_report or the paper skill helper.
 - Paper data (papers/, local-assets/, concepts/, knowledge/, research-outputs/, data .runtime/) lives in the data dir `PAPERLAB_DATA_DIR` from .env.local, default `D:\PaperLab\data` (backend/app/paths.py); paths in skills and docs are relative to it. Code, docs and skills stay in this folder.
 - PDF and caches in local-assets/ stay ignored. No automatic git push. Keep the default service bound to 127.0.0.1; same-Wi-Fi access only through the opt-in, key-protected `Start-PaperLab-LAN.cmd` (docs/DECISIONS.md, Phone and iPad reading). Never expose it beyond the private network.
 - questions.jsonl is human-owned: preserve reading-question snapshots, report revision and resolved state during all report regeneration.

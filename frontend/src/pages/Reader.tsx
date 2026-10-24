@@ -726,7 +726,6 @@ export default function Reader({
       {workbench && (
         <CodexWorkbench
           paper={paper}
-          page={state.page}
           onClose={() => setWorkbench(false)}
           onReport={() => void load()}
           onAsk={() => {

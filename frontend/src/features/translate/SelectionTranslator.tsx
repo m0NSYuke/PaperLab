@@ -64,7 +64,7 @@ const latinRatio = (s: string) => {
   return chars.length ? (chars.match(/[A-Za-z]/g)?.length || 0) / chars.length : 0;
 };
 /** Inside these regions a selection is English paper text worth translating. */
-const ZONES = ".textLayer, .original-segment, .source-fallback, .markdown, .q-text";
+const ZONES = ".textLayer, .markdown, .q-text";
 const MAX_H = 460,
   EDGE = 8;
 /** Touch selections carry drag handles below the text, so the card keeps further away. */

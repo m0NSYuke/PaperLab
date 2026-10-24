@@ -184,13 +184,6 @@
 .pdf-controls .fit:hover {
   background: var(--hover);
 }
-.reading-language {
-  height: 28px;
-  font-size: 12.5px;
-  padding: 0 24px 0 9px;
-  border-radius: 7px;
-  background-color: var(--panel);
-}
 .pill-toggle {
   display: inline-flex;
   align-items: center;
@@ -699,9 +692,6 @@
   }
   .reader-bar {
     gap: 6px;
-  }
-  .reading-language {
-    max-width: 92px;
   }
 }
 @media (max-width: 899px) {

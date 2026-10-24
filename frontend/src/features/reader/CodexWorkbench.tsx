@@ -10,12 +10,19 @@ import {
 import Modal from "../../components/Modal";
 import { api, base, copyText, paperCommand } from "../../api";
 import type { Paper } from "../../types";
-import type { Job } from "./TranslatedPage";
+type Job = {
+  job_id: string;
+  kind: string;
+  status: string;
+  progress: number;
+  total: number;
+  message: string;
+  created_at: string;
+  receipt?: { engine: string; auth?: string } | null;
+};
 const labels: Record<string, string> = {
   check: "连接验证",
   analyze: "生成研究报告",
-  translate_page: "逐页翻译",
-  translate_all: "整篇翻译",
   prepare_sources: "RAP 源码准备",
 };
 const statuses: Record<string, string> = {
@@ -27,13 +34,11 @@ const statuses: Record<string, string> = {
 };
 export default function CodexWorkbench({
   paper,
-  page,
   onClose,
   onReport,
   onAsk,
 }: {
   paper: Paper;
-  page: number;
   onClose: () => void;
   onReport: () => void;
   onAsk: () => void;
@@ -81,10 +86,7 @@ export default function CodexWorkbench({
     try {
       await api(`${base(paper.paper_id, paper.version)}/jobs`, {
         method: "POST",
-        body: JSON.stringify({
-          kind,
-          ...(kind === "translate_page" ? { page } : {}),
-        }),
+        body: JSON.stringify({ kind }),
       });
       await load();
     } catch (e) {
@@ -113,7 +115,7 @@ export default function CodexWorkbench({
         <p>{status?.message || "正在检测本机 Codex CLI…"}</p>
         <span className="muted small">
           GPT 问答使用你自己的 ChatGPT 会话；Codex
-          负责分析和翻译，结果标明来源。
+          负责生成研究报告，结果标明来源。
         </span>
       </div>
       <div className="workbench-actions">
@@ -164,22 +166,8 @@ export default function CodexWorkbench({
             <Play size={14} />
             生成 / 更新研究报告
           </button>
-          <button
-            className="secondary"
-            disabled={!status?.logged_in || starting}
-            onClick={() => void run("translate_page")}
-          >
-            翻译当前页（{page}）
-          </button>
-          <button
-            className="secondary"
-            disabled={!status?.logged_in || starting}
-            onClick={() => void run("translate_all")}
-          >
-            翻译整篇（{paper.page_count} 页）
-          </button>
         </div>
-        {gptAuthored&&<p className="muted small">这篇论文保留 GPT 撰写内容的既定分工；Codex 不会重新生成或覆盖报告。翻译、阅读和笔记仍可使用。</p>}
+        {gptAuthored&&<p className="muted small">这篇论文保留 GPT 撰写内容的既定分工；Codex 不会重新生成或覆盖报告。阅读、划词翻译和笔记仍可使用。</p>}
         <div className="command-line">
           <Terminal size={15} />
           <code>{paperCommand(paper)}</code>
@@ -212,8 +200,7 @@ export default function CodexWorkbench({
           <article key={j.job_id}>
             <div>
               <strong>
-                {labels[j.kind]}
-                {j.page ? ` · 第 ${j.page} 页` : ""}
+                {labels[j.kind] || j.kind}
               </strong>
               <span className={`job-state ${j.status}`}>
                 {statuses[j.status]}
