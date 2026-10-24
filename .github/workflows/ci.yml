@@ -16,6 +16,9 @@ jobs:
       - name: Install locked dependencies
         working-directory: backend
         run: uv sync --frozen
+      # The research-workspace tests read the pinned third-party skills, which are not vendored.
+      - name: Install Nature Skills (hash-verified)
+        run: python scripts/install-nature-skills.py
       - name: Run pytest
         working-directory: backend
         run: uv run pytest -q
