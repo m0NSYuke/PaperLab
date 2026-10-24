@@ -25,7 +25,7 @@
 - **Zotero 式阅读器**：一条 48px 工具栏，目录 / 阅读路线侧栏和讲解栏都能收起，`F` 专注阅读只留论文。PDF.js 渲染，原文搜索、缩放、书签、阅读位置自动保存。
 - **有出处的报告**：每条结论都带原文页码和引句，点击即跳页并高亮；发布前逐条校验引句确实出现在该页，区分「论文事实 / 辅助解释 / 推断 / 待核实」。
 - **完整讲解 + 分章节标签**：问题、方法、训练、推理、公式（逐符号、逐步推导）、实验、关联研究。
-- **中英翻译**：逐页中文译文与中英对照（Codex 订阅生成并缓存），以及下面的离线划词翻译。
+- **划词翻译**：选中英文即在旁边出译文，不做整篇翻译，原文始终是原始 PDF（见下）。
 
 **划词翻译（全程离线，不占任何额度）**
 - 单词和术语：77 万词条的 ECDICT 离线词典，加上 217 条 AI / 机器人学术术语库（ablation 显示「消融实验」而不是「切除」）。
@@ -122,7 +122,7 @@ python scripts\verify-nature-skills.py       # 可选：再次核验
 frontend/          React 19 + TypeScript + Vite + PDF.js + KaTeX
 backend/app/       FastAPI：导入、版本固定、存储、报告校验与发布、翻译、Codex 任务
 backend/tests/     后端测试（pytest）
-frontend/tests/    浏览器端到端测试（Playwright，需本机已导入的示例论文）
+frontend/tests/    浏览器端到端测试（Playwright，自动生成演示论文，不用你的论文）
 .agents/skills/    paper（报告生成）· rap（源码优先读论文）· nature-*（安装后出现）
 .claude/skills/    Claude Code 的 /paper、/rap 入口
 scripts/           安装、启动、测试、演示数据、词典构建、Nature Skills 安装

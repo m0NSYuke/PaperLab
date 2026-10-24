@@ -5,7 +5,9 @@ project (CC0, not a real publication), imports it like any local PDF and publish
 a sample report through the normal validator, so every citation is checked
 against the generated PDF text.
 
-Usage:  backend/.venv/Scripts/python.exe -X utf8 scripts/make_demo.py [--root DATA_DIR]
+Usage:  backend/.venv/Scripts/python.exe -X utf8 scripts/make_demo.py [--root DATA_DIR] [--paper ID]
+        --paper republishes the sample report onto an existing demo paper (notes, study
+        records and corrections are kept, as with any regenerated report).
 """
 import argparse
 import sys
@@ -125,7 +127,7 @@ def build_report(meta: Metadata) -> dict:
              "derivation": ["对 $\\tau$ 求导得到速度 $\\frac{dA^{\\tau}}{d\\tau}=A_t-\\epsilon$。",
                             "这就是训练时网络要回归的目标。"],
              "derivation_type": "auxiliary_explanation", "citations": [loss]}],
-        "concept_links": [],
+        "concept_links": ["flow-matching"],
         "quality_checks": ["演示文档：PDF 与报告均由 scripts/make_demo.py 生成，不代表任何真实研究。",
                            "所有 verified 引句都通过了发布器的页文本校验。"],
         "reading_guide": {
@@ -154,17 +156,44 @@ def build_report(meta: Metadata) -> dict:
     }
 
 
+CONCEPT = r"""# Flow Matching
+
+**一句话：学一个把噪声「推」成数据的速度场，再沿着它积分几步得到样本。**
+
+- 训练：把数据 $x_1$ 和噪声 $x_0$ 按时间 $\tau$ 线性插值成 $x_\tau$，让网络回归速度 $x_1-x_0$。
+- 生成：从纯噪声出发，用欧拉法等常微分方程解法沿学到的速度场走到 $\tau=1$。
+- 和扩散模型的关系：同属「从噪声生成」的方法；直线路径让少量积分步也能得到不错的样本。
+
+> PaperLab 演示概念卡（自行撰写，CC0）。
+"""
+
+
+def create(root: Path, paper_id: str | None = None) -> tuple[Metadata, object]:
+    """Import the demo paper (or reuse ``paper_id``) and publish its sample report."""
+    root = root.absolute()
+    if paper_id:
+        meta = Metadata.model_validate(read_json(paper_dir(root, paper_id, "v1") / "metadata.json"))
+    else:
+        meta = import_pdf(root, make_pdf(), "paperlab-demo.pdf", "PaperLab 演示 · " + TITLE)
+        with data_lock(root):
+            path = paper_dir(root, meta.paper_id, meta.version) / "metadata.json"
+            meta = Metadata.model_validate(read_json(path))
+            meta.topics = ["VLA", "Diffusion / Flow Matching"]
+            write_json(path, meta.model_dump())
+    concept = root / "concepts" / "flow-matching.md"
+    if not concept.exists():  # never replace a concept card the user already has
+        concept.parent.mkdir(parents=True, exist_ok=True)
+        concept.write_text(CONCEPT, encoding="utf-8")
+    return meta, publish_report(root, build_report(meta))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--root", type=Path, default=None, help="data directory (default: PAPERLAB_DATA_DIR or the app folder)")
-    root = (parser.parse_args().root or data_root()).absolute()
-    meta = import_pdf(root, make_pdf(), "paperlab-demo.pdf", "PaperLab 演示 · " + TITLE)
-    with data_lock(root):
-        path = paper_dir(root, meta.paper_id, meta.version) / "metadata.json"
-        meta = Metadata.model_validate(read_json(path))
-        meta.topics = ["VLA", "Diffusion / Flow Matching"]
-        write_json(path, meta.model_dump())
-    report = publish_report(root, build_report(meta))
+    parser.add_argument("--paper", default=None, help="republish onto this existing demo paper instead of importing a new one")
+    args = parser.parse_args()
+    root = (args.root or data_root()).absolute()
+    meta, report = create(root, args.paper)
     print(f"Demo paper {meta.paper_id}/{meta.version} ready ({report.analysis_status}, revision {report.revision}) in {root}")
 
 
