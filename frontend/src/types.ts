@@ -1,0 +1,163 @@
+export type Paper = {
+  schema_version: string;
+  paper_id: string;
+  version: string;
+  title: string;
+  authors: string[];
+  year: number | null;
+  source_url: string | null;
+  doi: string | null;
+  topics: string[];
+  reading_status: "unread" | "reading" | "completed";
+  analysis_status:
+    "not_analyzed" | "analyzing" | "ready" | "failed" | "needs_review";
+  imported_at: string;
+  last_opened_at: string | null;
+  page_count: number;
+  warnings: string[];
+};
+export type Citation = {
+  source_type: "pdf" | "external";
+  paper_id: string;
+  version: string;
+  page: number | null;
+  section: string | null;
+  quote: string;
+  url: string | null;
+  verification: "verified" | "unverified" | "missing";
+};
+export type Claim = {
+  claim_id: string;
+  text: string;
+  section: string;
+  claim_type: string;
+  citations: Citation[];
+  evidence_status: string;
+};
+export type Equation = {
+  equation_id: string;
+  title: string;
+  latex: string;
+  symbols: { symbol: string; definition: string; shape: string | null }[];
+  explanation: string;
+  derivation: string[];
+  derivation_type: string;
+  citations: Citation[];
+};
+export type Report = {
+  schema_version: string;
+  paper_id: string;
+  version: string;
+  generated_at: string;
+  revision: number;
+  analysis_status: string;
+  overview: string;
+  motivation: string;
+  contributions: string;
+  method: string;
+  mathematics: string;
+  training: string;
+  inference: string;
+  limitations: string;
+  experiments: {
+    name: string;
+    dataset: string;
+    baselines: string[];
+    metric: string;
+    value: string;
+    protocol: string;
+    citations: Citation[];
+  }[];
+  related_papers: {
+    title: string;
+    relation: string;
+    explanation: string;
+    verified: boolean;
+    url: string | null;
+    citations: Citation[];
+  }[];
+  claims: Claim[];
+  equations: Equation[];
+  concept_links: string[];
+  quality_checks: string[];
+  reading_guide?: { first_pass: GuideStop[]; must_read: GuideStop[] } | null;
+  self_test?: SelfTestItem[];
+  tutorial?: {
+    introduction: string;
+    prerequisites: TeachingUnit[];
+    walkthrough: TeachingUnit[];
+    worked_examples: TeachingUnit[];
+    faq: {question: string; answer: string; citations: Citation[]}[];
+  } | null;
+};
+export type TeachingUnit = {unit_id: string; title: string; body: string; citations: Citation[]};
+export type ReportBlock = {id: string; title: string; section: string; body: string; citations: Citation[]};
+export type SavedQuestion = {
+  question_id: string; question: string; context: string; section: string; page: number;
+  report_revision: number | null; resolved: boolean; created_at: string;
+};
+export type GuideStop = { page: number; label: string; why: string };
+export type SelfTestItem = {
+  question_id: string;
+  level: "recall" | "understand" | "transfer";
+  question: string;
+  answer: string;
+  citations: Citation[];
+};
+export type Verdict = "unanswered" | "got_it" | "partial" | "missed";
+export type IdeaStatus = "new" | "exploring" | "parked" | "dropped";
+export type Idea = {
+  idea_id: string;
+  text: string;
+  status: IdeaStatus;
+  source: string;
+  created_at: string;
+};
+export type Study = {
+  schema_version: string;
+  passes: (1 | 2 | 3)[];
+  checked_stops: string[];
+  judgment: {
+    novelty: number | null;
+    effectiveness: number | null;
+    problem_size: number | null;
+    reasons: string;
+    bottleneck: string;
+    next_step: string;
+  };
+  tests: {
+    question_id: string;
+    my_answer: string;
+    verdict: Verdict;
+    updated_at: string;
+  }[];
+  ideas: Idea[];
+  updated_at: string | null;
+};
+export type StudySummary = {
+  passes: number[];
+  tests_answered: number;
+  tests_mastered: number;
+  value_score: number | null;
+  ideas: number;
+};
+export type StudyOverview = {
+  papers: Record<string, StudySummary>;
+  ideas: (Idea & { paper_id: string; version: string; title: string })[];
+};
+export type Correction = {
+  claim_id: string;
+  correction_id: string;
+  type: string;
+  original_text: string;
+  corrected_text: string;
+  reason: string;
+  status: string;
+  created_at: string;
+};
+export type ReadingState = {
+  page: number;
+  scale: string;
+  split: number;
+  tab: string;
+};

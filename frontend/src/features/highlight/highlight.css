@@ -1,0 +1,233 @@
+/* PDF highlights: drawn under the text layer, blended into the page. */
+.hl-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.hl-layer .hl {
+  position: absolute;
+  border-radius: 2px;
+  mix-blend-mode: multiply;
+  background: var(--hl);
+}
+.hl-layer .hl.active {
+  outline: 2px solid var(--hl-edge);
+  outline-offset: 1px;
+}
+.hl-layer .hl.has-note::after {
+  content: "";
+  position: absolute;
+  right: -5px;
+  top: -5px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--hl-edge);
+  box-shadow: 0 0 0 1.5px #fff;
+}
+.hl-yellow {
+  --hl: rgba(255, 214, 10, 0.42);
+  --hl-edge: #d4a600;
+}
+.hl-green {
+  --hl: rgba(110, 200, 90, 0.38);
+  --hl-edge: #4c9a3a;
+}
+.hl-blue {
+  --hl: rgba(90, 160, 240, 0.36);
+  --hl-edge: #3b78c4;
+}
+.hl-pink {
+  --hl: rgba(245, 110, 160, 0.36);
+  --hl-edge: #cc4b7f;
+}
+.hl-purple {
+  --hl: rgba(160, 120, 230, 0.36);
+  --hl-edge: #7f57c4;
+}
+
+.hl-swatches {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.hl-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--hl-edge);
+  background: var(--hl);
+  display: grid;
+  place-items: center;
+  color: var(--text);
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.12s;
+}
+.hl-swatch:hover {
+  transform: scale(1.12);
+}
+.hl-swatch[aria-checked="true"] {
+  box-shadow: 0 0 0 2px var(--panel), 0 0 0 4px var(--hl-edge);
+}
+
+/* The highlight row inside the selection card. */
+.hl-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin-top: 10px;
+  padding-top: 9px;
+  border-top: 1px solid var(--border);
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.hl-row > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.hl-row textarea,
+.hl-editor textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 52px;
+  font: inherit;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+}
+
+/* Editor for an existing highlight. */
+.hl-editor {
+  position: fixed;
+  z-index: 61;
+  width: 320px;
+  max-width: calc(100vw - 16px);
+  display: grid;
+  gap: 10px;
+  background: var(--panel);
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg);
+  padding: 12px 14px 10px;
+  animation: translator-in 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.hl-editor header {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  color: var(--clay);
+}
+.hl-editor header svg {
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+.hl-editor header .icon-button {
+  width: 24px;
+  height: 24px;
+  margin: -2px -6px 0 0;
+  flex-shrink: 0;
+}
+.hl-quote {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.hl-editor footer {
+  display: flex;
+  align-items: center;
+  gap: 4px 12px;
+  flex-wrap: wrap;
+}
+.hl-editor footer small {
+  flex: 1;
+  color: var(--faint);
+  font-size: 12px;
+}
+.hl-editor .text-button.danger {
+  color: var(--danger);
+}
+/* Phones: the editor is a bottom sheet, clear of the text being marked. */
+.hl-editor.sheet {
+  left: 8px;
+  right: 8px;
+  bottom: calc(8px + env(safe-area-inset-bottom));
+  width: auto;
+  max-width: none;
+}
+
+/* The notes tab's list of highlights. */
+.hl-list {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.hl-list button {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 10px;
+  text-align: left;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--panel);
+  cursor: pointer;
+  color: var(--text-2);
+}
+.hl-list button:hover {
+  background: var(--hover);
+}
+.hl-list .hl-dot {
+  grid-row: span 2;
+  width: 6px;
+  border-radius: 3px;
+  background: var(--hl-edge);
+}
+.hl-list .hl-text {
+  font-family: var(--font-serif);
+  font-size: 14px;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.hl-list small {
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+@media (pointer: coarse) {
+  .hl-swatch {
+    width: 32px;
+    height: 32px;
+  }
+  .hl-swatches {
+    gap: 12px;
+  }
+  .hl-row textarea,
+  .hl-editor textarea {
+    font-size: 16px;
+  }
+  .hl-editor header .icon-button {
+    width: 34px;
+    height: 34px;
+    margin: -6px -6px 0 0;
+  }
+  .hl-editor footer .text-button {
+    min-height: 36px;
+  }
+}

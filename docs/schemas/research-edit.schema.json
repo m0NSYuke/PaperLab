@@ -1,0 +1,22 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "content": {
+      "maxLength": 200000,
+      "minLength": 1,
+      "title": "Content",
+      "type": "string"
+    },
+    "etag": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Etag",
+      "type": "string"
+    }
+  },
+  "required": [
+    "content",
+    "etag"
+  ],
+  "title": "DraftEdit",
+  "type": "object"
+}

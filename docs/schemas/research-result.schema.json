@@ -1,0 +1,75 @@
+{
+  "$defs": {
+    "DraftCitation": {
+      "additionalProperties": false,
+      "properties": {
+        "paper_id": {
+          "title": "Paper Id",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        },
+        "page": {
+          "minimum": 1,
+          "title": "Page",
+          "type": "integer"
+        },
+        "quote": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Quote",
+          "type": "string"
+        }
+      },
+      "required": [
+        "paper_id",
+        "version",
+        "page",
+        "quote"
+      ],
+      "title": "DraftCitation",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "title": {
+      "maxLength": 300,
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    },
+    "markdown": {
+      "maxLength": 180000,
+      "minLength": 1,
+      "title": "Markdown",
+      "type": "string"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 40,
+      "title": "Warnings",
+      "type": "array"
+    },
+    "citations": {
+      "items": {
+        "$ref": "#/$defs/DraftCitation"
+      },
+      "maxItems": 100,
+      "title": "Citations",
+      "type": "array"
+    }
+  },
+  "required": [
+    "title",
+    "markdown",
+    "warnings",
+    "citations"
+  ],
+  "title": "DraftResult",
+  "type": "object"
+}

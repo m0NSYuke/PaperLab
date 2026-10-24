@@ -1,0 +1,75 @@
+body {min-width:320px}
+.reader-layout {min-width:0;max-width:100vw}
+.reading-view {display:flex;gap:4px;align-items:center;padding:7px 16px;border-bottom:1px solid var(--border);background:var(--panel);flex-shrink:0;flex-wrap:wrap}
+.reading-view button {font-size:13px;padding:6px 12px;border-radius:var(--radius-sm);color:var(--muted)}
+.reading-view button[aria-pressed=true] {background:var(--accent-soft);color:var(--accent)}
+.reading-view span {font-size:12px;color:var(--faint);margin-left:auto}
+.view-report .report-scroll>* {margin-left:auto;margin-right:auto;max-width:850px}
+.view-report .report-scroll {padding-left:max(24px,calc((100% - 850px)/2));padding-right:max(24px,calc((100% - 850px)/2))}
+.lesson-entry,.lesson-heading {display:flex;gap:12px;justify-content:space-between;align-items:baseline;flex-wrap:wrap}
+.lesson-entry {margin:0 0 22px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.lesson-section {margin:30px 0;scroll-margin-top:16px}
+.lesson-heading h3 {margin:0 0 12px}
+.lesson-heading button {font-family:var(--font-sans);font-size:12px;flex-shrink:0}
+.lesson-toc {display:flex;flex-wrap:wrap;gap:7px;margin:16px 0 25px}
+.lesson-toc button {border:1px solid var(--border);border-radius:20px;font-size:12px;padding:6px 11px;color:var(--muted)}
+.lesson-search {background:var(--soft);padding:16px;border-radius:var(--radius)}
+.guided-report details {border-bottom:1px solid var(--border);padding:12px 0}
+.guided-report summary {cursor:pointer;font-size:14px;line-height:1.6}
+.lesson-evidence summary {font-size:12px;color:var(--muted)}
+.reading-questions {margin-top:22px;border-top:1px solid var(--border);padding-top:18px}
+.reading-questions article {padding:12px 0;border-bottom:1px solid var(--border)}
+.reading-questions article strong {font-size:14px}
+.reader-paper-title>span {overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:899px){
+  /* Desktop animates panes in reader-shell.css; small screens simply hide them. */
+  .reader-split.view-report,.reader-split.view-pdf {grid-template-columns:minmax(0,1fr)}
+  .view-report>.pdf-pane,.view-report>.splitter,.view-pdf>.report-pane,.view-pdf>.splitter {display:none}
+  .reader-top {flex-wrap:wrap;gap:7px;padding:8px 10px}
+  .reader-paper-title {flex-basis:calc(100% - 105px)}
+  .reader-paper-title h1 {font-size:15px}
+  .reader-top .ask-button {font-size:12px}
+  .reader-top .ask-button svg:last-child {display:none}
+  .reader-split.view-split {grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) minmax(0,1fr)}
+  .reader-split.view-split>.splitter {display:none}
+  .report-tabs {flex-shrink:0}
+  .reading-view {padding:5px 8px}
+  .reading-view span {display:none}
+  .report-scroll,.view-report .report-scroll {padding:20px 18px 45px}
+  .reader-bottom {gap:5px;padding-left:10px;padding-right:10px;font-size:11px}
+  .modal {max-width:calc(100vw - 24px)}
+  .modal-actions {flex-wrap:wrap;justify-content:flex-start}
+  .lesson-heading {gap:0}
+}
+
+/* ---- Report reading: clear hierarchy, readable formulas (chat-style prose). ---- */
+.report-scroll .markdown li {margin:.4em 0}
+.report-scroll .markdown > :first-child {margin-top:0}
+.report-scroll .markdown h2,.report-scroll .markdown h3 {font-family:var(--font-sans);letter-spacing:-.1px}
+.report-scroll .markdown table {border:1px solid var(--border);border-collapse:separate;border-spacing:0;border-radius:var(--radius-sm);overflow:hidden;width:100%}
+.report-scroll .markdown th {background:var(--bg-sunk);color:var(--text-2)}
+/* Display formulas sit on their own tinted block, a little larger than prose. */
+.report-scroll .markdown .katex-display {background:var(--bg-sunk);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin:1.1em 0}
+.report-scroll .markdown .katex-display>.katex {font-size:1.16em;color:var(--text)}
+.report-scroll .markdown .katex {color:var(--text)}
+.report-scroll .markdown .katex-error {font-family:var(--font-mono,monospace);font-size:13px;color:var(--danger)}
+.ref-chip {display:inline-block;font-family:var(--font-sans);font-size:11px;line-height:17px;padding:0 6px;margin:0 2px;border-radius:999px;background:var(--soft);color:var(--faint);vertical-align:2px;white-space:nowrap;cursor:help}
+/* Guided report: numbered chapters, each holding titled units. */
+.lesson-chapter {margin:48px 0 0;padding-top:24px;border-top:1px solid var(--border);scroll-margin-top:12px}
+.chapter-title {display:flex;align-items:baseline;gap:12px;font-family:var(--font-serif);font-size:23px;font-weight:600;color:var(--text);margin:0 0 4px}
+.chapter-title span {font-family:var(--font-sans);font-size:13px;font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums}
+.chapter-hint {font-size:13px;color:var(--muted);margin:0 0 18px}
+.lesson-chapter .lesson-section {margin:22px 0}
+.lesson-heading h4 {margin:0 0 10px;font-family:var(--font-sans);font-size:17px;font-weight:600;color:var(--text);line-height:1.45}
+.lesson-toc button {display:inline-flex;gap:6px;align-items:baseline}
+.lesson-toc button span {font-size:10.5px;color:var(--faint);font-variant-numeric:tabular-nums}
+.lesson-toc button:hover {color:var(--accent);border-color:var(--accent)}
+/* Callouts (> [!INTUITION] etc.): a tinted box with a small label, like a chat assistant's asides. */
+.markdown blockquote.callout {margin:1.1em 0;padding:12px 16px 12px 16px;border-left:3px solid var(--callout,var(--accent));border-radius:0 10px 10px 0;background:var(--callout-bg,var(--accent-soft));color:var(--text-2)}
+.markdown blockquote.callout::before {content:attr(data-label);display:block;font-family:var(--font-sans);font-size:11.5px;font-weight:600;letter-spacing:.4px;color:var(--callout,var(--accent));margin-bottom:4px}
+.markdown blockquote.callout>p:last-child {margin-bottom:0}
+.callout-intuition,.callout-tip {--callout:#3b7bd4;--callout-bg:rgba(59,123,212,.08)}
+.callout-analogy {--callout:#8a5cc7;--callout-bg:rgba(138,92,199,.08)}
+.callout-key {--callout:var(--accent);--callout-bg:var(--accent-soft)}
+.callout-pitfall,.callout-warning {--callout:#c2410c;--callout-bg:rgba(194,65,12,.08)}
+.callout-note {--callout:#5f6b7a;--callout-bg:var(--bg-sunk)}

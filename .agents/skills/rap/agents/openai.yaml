@@ -1,0 +1,4 @@
+interface:
+  display_name: "RAP · PaperLab"
+  short_description: "Read pinned LaTeX sources and publish a PaperLab report"
+  default_prompt: "Use $rap to read this paper's LaTeX sources and publish a verified Chinese report in PaperLab."

@@ -1,0 +1,55 @@
+local-assets/
+.tools/
+.venv/
+node_modules/
+.npm-cache/
+frontend/dist/
+frontend/public/pdfjs/
+__pycache__/
+.pytest_cache/
+*.pyc
+.env*
+!.env.example
+*.log
+tmp/
+test-results/
+playwright-report/
+.runtime/
+papers/**/.history/
+*.tmp
+*.tsbuildinfo
+
+# ---- Local only: never published --------------------------------------
+# Papers, reports, notes and study records belong to each user's own data
+# directory (PAPERLAB_DATA_DIR); the repository ships the platform only.
+papers/
+concepts/
+knowledge/
+research-outputs/
+jobs/
+mt-cache.sqlite
+_old-data-on-C/
+# Offline translation model, llama.cpp runtime and dictionary (see .env.example).
+models/
+# Third-party Nature Skills: install with scripts/install-nature-skills.py.
+.agents/skills/nature-*/
+docs/nature-skills-verification.json
+# Run logs, acceptance records and screenshots of the maintainer's own papers.
+docs/screenshots/
+docs/e2e-results.json
+docs/codex-live-verification.json
+docs/nature-workspace-acceptance.json
+docs/nature-workspace-deployment.json
+docs/TEST_RESULTS.md
+docs/ACCEPTANCE.md
+docs/READING_FLOW_REVIEW.md
+# Scripts tied to specific papers the maintainer read.
+scripts/build_pi0_report.py
+scripts/prepare-rap-media.py
+scripts/export-*-reader.mjs
+scripts/export-rap-html.mjs
+scripts/verify_codex_bridge.py
+.gstack/
+
+# Paper-specific decision history (kept locally)
+docs/DECISIONS.local.md

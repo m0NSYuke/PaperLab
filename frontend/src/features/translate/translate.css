@@ -1,0 +1,374 @@
+/* Floating selection-translation card. */
+.translator-card {
+  position: fixed;
+  z-index: 60;
+  width: 380px;
+  max-width: calc(100vw - 24px);
+  max-height: min(460px, calc(100vh - 24px));
+  overflow: auto;
+  background: var(--panel);
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg);
+  padding: 12px 14px 10px;
+  transform-origin: top center;
+  animation: translator-in 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes translator-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.97);
+  }
+}
+/* Docked: a side panel away from the selection that persists across selections. */
+.translator-card.docked {
+  width: 360px;
+  max-height: calc(100vh - 88px);
+  border: 1px solid var(--border);
+  animation-name: translator-dock-in;
+}
+.translator-card.dock-right {
+  right: 16px;
+}
+.translator-card.dock-left {
+  left: 16px;
+}
+@keyframes translator-dock-in {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+}
+.translator-card header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--clay);
+}
+.translator-card:not(.docked) header {
+  cursor: grab;
+  touch-action: none;
+}
+.translator-card.dragged header:active {
+  cursor: grabbing;
+}
+.translator-card.collapsed .translator-source {
+  -webkit-line-clamp: 1;
+}
+.translator-card header svg {
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+.translator-source {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.translator-card header .icon-button {
+  width: 24px;
+  height: 24px;
+  margin: -2px -6px 0 0;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.translator-card header .icon-button:last-child {
+  margin-right: -4px;
+}
+.translator-card header .icon-button[aria-pressed="true"] {
+  color: var(--accent);
+}
+.translator-card .chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11.5px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--soft);
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.translator-card .chip.clay {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 500;
+}
+.glossary-hit {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  background: var(--bg-sunk);
+}
+.glossary-hit strong {
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+}
+.glossary-hit small {
+  margin-left: auto;
+  font-size: 11.5px;
+  color: var(--faint);
+}
+.dict-entry {
+  margin-top: 10px;
+}
+.dict-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.dict-head strong {
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--text);
+}
+.dict-head span {
+  font-size: 13px;
+  color: var(--muted);
+}
+.dict-head .stars {
+  color: var(--clay);
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+.dict-head small {
+  font-size: 11px;
+  color: var(--faint);
+}
+.dict-entry ul {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 3px;
+}
+.dict-entry li {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+.dict-entry li em {
+  font-style: normal;
+  font-size: 12px;
+  color: var(--faint);
+  margin-right: 6px;
+}
+.dict-tags,
+.mt-terms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+.mt-result {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.dict-entry + .mt-result,
+.glossary-hit + .mt-result {
+  border-top: 1px dashed var(--border);
+}
+.mt-result p {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--text);
+  animation: fade-up 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.mt-error {
+  color: var(--danger) !important;
+  font-size: 13px !important;
+  font-family: var(--font-sans) !important;
+}
+.mt-loading {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.mt-loading i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--clay);
+  animation: bounce 1s infinite ease-in-out;
+}
+.mt-loading i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.mt-loading i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.mt-loading span {
+  margin-left: 6px;
+}
+.term-form {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.term-form input {
+  flex: 1;
+  height: 32px;
+  font-size: 13.5px;
+}
+.term-form .primary {
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+.translator-card footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.translator-card .engine {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: auto;
+  font-size: 11.5px;
+  color: var(--faint);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.translator-card footer .text-button {
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+.translator-history {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  display: grid;
+  gap: 2px;
+}
+.translator-history h4 {
+  margin: 0 0 4px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--faint);
+}
+.translator-history button {
+  display: grid;
+  gap: 1px;
+  text-align: left;
+  padding: 6px 8px;
+  margin: 0 -8px;
+  border-radius: 8px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.translator-history button:hover {
+  background: var(--soft);
+}
+.translator-history span,
+.translator-history small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.translator-history span {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.translator-history small {
+  font-size: 13px;
+  color: var(--text-2);
+}
+/* Paragraph selections get a wider card so long translations read comfortably. */
+.translator-card.wide {
+  width: 500px;
+}
+.translator-card footer {
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+/* Drag handle on the docked panel's inner edge. */
+.dock-resizer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: col-resize;
+  z-index: 1;
+}
+.dock-right .dock-resizer {
+  left: -1px;
+}
+.dock-left .dock-resizer {
+  right: -1px;
+}
+.dock-resizer:hover,
+.dock-resizer:active {
+  background: linear-gradient(to right, transparent 3px, var(--accent) 3px, var(--accent) 5px, transparent 5px);
+}
+/* Phones: the docked panel becomes a bottom sheet instead of covering a side. */
+@media (max-width: 640px) {
+  .translator-card.docked {
+    left: 8px;
+    right: 8px;
+    top: auto !important;
+    bottom: calc(8px + env(safe-area-inset-bottom));
+    width: auto !important;
+    max-height: 46vh;
+  }
+  .translator-card .dock-resizer {
+    display: none;
+  }
+}
+/* Touch: finger-sized controls, and 16px inputs so iOS does not zoom on focus. */
+@media (pointer: coarse) {
+  .translator-card header .icon-button {
+    width: 34px;
+    height: 34px;
+    margin: -6px -6px 0 0;
+  }
+  .translator-card footer {
+    gap: 4px 16px;
+  }
+  .translator-card footer .text-button {
+    min-height: 36px;
+    font-size: 13.5px;
+  }
+  .term-form input {
+    height: 38px;
+    font-size: 16px;
+  }
+  .translator-history button {
+    padding: 9px 8px;
+  }
+}
+.mt-error .link {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--accent);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}

@@ -1,0 +1,718 @@
+{
+  "$defs": {
+    "Citation": {
+      "additionalProperties": false,
+      "properties": {
+        "source_type": {
+          "default": "pdf",
+          "enum": [
+            "pdf",
+            "external"
+          ],
+          "title": "Source Type",
+          "type": "string"
+        },
+        "paper_id": {
+          "title": "Paper Id",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        },
+        "page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page"
+        },
+        "section": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Section"
+        },
+        "quote": {
+          "default": "",
+          "title": "Quote",
+          "type": "string"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        },
+        "verification": {
+          "default": "unverified",
+          "enum": [
+            "verified",
+            "unverified",
+            "missing"
+          ],
+          "title": "Verification",
+          "type": "string"
+        }
+      },
+      "required": [
+        "paper_id",
+        "version"
+      ],
+      "title": "Citation",
+      "type": "object"
+    },
+    "Claim": {
+      "additionalProperties": false,
+      "properties": {
+        "claim_id": {
+          "title": "Claim Id",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "section": {
+          "enum": [
+            "overview",
+            "method",
+            "mathematics",
+            "experiments",
+            "relations"
+          ],
+          "title": "Section",
+          "type": "string"
+        },
+        "claim_type": {
+          "enum": [
+            "paper_fact",
+            "paper_interpretation",
+            "external_background",
+            "inference",
+            "uncertain"
+          ],
+          "title": "Claim Type",
+          "type": "string"
+        },
+        "citations": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Citation"
+          },
+          "title": "Citations",
+          "type": "array"
+        },
+        "evidence_status": {
+          "default": "missing",
+          "enum": [
+            "supported",
+            "missing",
+            "needs_review"
+          ],
+          "title": "Evidence Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "claim_id",
+        "text",
+        "section",
+        "claim_type"
+      ],
+      "title": "Claim",
+      "type": "object"
+    },
+    "Equation": {
+      "additionalProperties": false,
+      "properties": {
+        "equation_id": {
+          "title": "Equation Id",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "latex": {
+          "title": "Latex",
+          "type": "string"
+        },
+        "symbols": {
+          "items": {
+            "$ref": "#/$defs/Symbol"
+          },
+          "title": "Symbols",
+          "type": "array"
+        },
+        "explanation": {
+          "title": "Explanation",
+          "type": "string"
+        },
+        "derivation": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Derivation",
+          "type": "array"
+        },
+        "derivation_type": {
+          "default": "auxiliary_explanation",
+          "enum": [
+            "paper",
+            "auxiliary_explanation"
+          ],
+          "title": "Derivation Type",
+          "type": "string"
+        },
+        "citations": {
+          "items": {
+            "$ref": "#/$defs/Citation"
+          },
+          "title": "Citations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "equation_id",
+        "title",
+        "latex",
+        "symbols",
+        "explanation",
+        "derivation",
+        "citations"
+      ],
+      "title": "Equation",
+      "type": "object"
+    },
+    "Experiment": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "dataset": {
+          "title": "Dataset",
+          "type": "string"
+        },
+        "baselines": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Baselines",
+          "type": "array"
+        },
+        "metric": {
+          "title": "Metric",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        },
+        "protocol": {
+          "title": "Protocol",
+          "type": "string"
+        },
+        "citations": {
+          "items": {
+            "$ref": "#/$defs/Citation"
+          },
+          "title": "Citations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "dataset",
+        "baselines",
+        "metric",
+        "value",
+        "protocol",
+        "citations"
+      ],
+      "title": "Experiment",
+      "type": "object"
+    },
+    "GuideStop": {
+      "additionalProperties": false,
+      "properties": {
+        "page": {
+          "minimum": 1,
+          "title": "Page",
+          "type": "integer"
+        },
+        "label": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "why": {
+          "default": "",
+          "maxLength": 2000,
+          "title": "Why",
+          "type": "string"
+        }
+      },
+      "required": [
+        "page",
+        "label"
+      ],
+      "title": "GuideStop",
+      "type": "object"
+    },
+    "ReadingGuide": {
+      "additionalProperties": false,
+      "description": "Three-pass reading route. first_pass = skim stops; must_read = pages the reader studies personally.",
+      "properties": {
+        "first_pass": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/GuideStop"
+          },
+          "title": "First Pass",
+          "type": "array"
+        },
+        "must_read": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/GuideStop"
+          },
+          "title": "Must Read",
+          "type": "array"
+        }
+      },
+      "title": "ReadingGuide",
+      "type": "object"
+    },
+    "Relation": {
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "relation": {
+          "enum": [
+            "citation",
+            "extends",
+            "compares_with",
+            "shares_method"
+          ],
+          "title": "Relation",
+          "type": "string"
+        },
+        "explanation": {
+          "title": "Explanation",
+          "type": "string"
+        },
+        "verified": {
+          "default": false,
+          "title": "Verified",
+          "type": "boolean"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        },
+        "citations": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Citation"
+          },
+          "title": "Citations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "title",
+        "relation",
+        "explanation"
+      ],
+      "title": "Relation",
+      "type": "object"
+    },
+    "SelfTestItem": {
+      "additionalProperties": false,
+      "properties": {
+        "question_id": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Question Id",
+          "type": "string"
+        },
+        "level": {
+          "default": "understand",
+          "enum": [
+            "recall",
+            "understand",
+            "transfer"
+          ],
+          "title": "Level",
+          "type": "string"
+        },
+        "question": {
+          "minLength": 1,
+          "title": "Question",
+          "type": "string"
+        },
+        "answer": {
+          "minLength": 1,
+          "title": "Answer",
+          "type": "string"
+        },
+        "citations": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Citation"
+          },
+          "title": "Citations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "question_id",
+        "question",
+        "answer"
+      ],
+      "title": "SelfTestItem",
+      "type": "object"
+    },
+    "Symbol": {
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "title": "Symbol",
+          "type": "string"
+        },
+        "definition": {
+          "title": "Definition",
+          "type": "string"
+        },
+        "shape": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Shape"
+        }
+      },
+      "required": [
+        "symbol",
+        "definition"
+      ],
+      "title": "Symbol",
+      "type": "object"
+    },
+    "TeachingUnit": {
+      "additionalProperties": false,
+      "properties": {
+        "unit_id": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Unit Id",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "body": {
+          "minLength": 1,
+          "title": "Body",
+          "type": "string"
+        },
+        "citations": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Citation"
+          },
+          "title": "Citations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "unit_id",
+        "title",
+        "body"
+      ],
+      "title": "TeachingUnit",
+      "type": "object"
+    },
+    "Tutorial": {
+      "additionalProperties": false,
+      "properties": {
+        "introduction": {
+          "title": "Introduction",
+          "type": "string"
+        },
+        "prerequisites": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/TeachingUnit"
+          },
+          "title": "Prerequisites",
+          "type": "array"
+        },
+        "walkthrough": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/TeachingUnit"
+          },
+          "title": "Walkthrough",
+          "type": "array"
+        },
+        "worked_examples": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/TeachingUnit"
+          },
+          "title": "Worked Examples",
+          "type": "array"
+        },
+        "faq": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/TutorialFAQ"
+          },
+          "title": "Faq",
+          "type": "array"
+        }
+      },
+      "required": [
+        "introduction"
+      ],
+      "title": "Tutorial",
+      "type": "object"
+    },
+    "TutorialFAQ": {
+      "additionalProperties": false,
+      "properties": {
+        "question": {
+          "minLength": 1,
+          "title": "Question",
+          "type": "string"
+        },
+        "answer": {
+          "minLength": 1,
+          "title": "Answer",
+          "type": "string"
+        },
+        "citations": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Citation"
+          },
+          "title": "Citations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "question",
+        "answer"
+      ],
+      "title": "TutorialFAQ",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "1.1",
+      "enum": [
+        "1.0",
+        "1.1",
+        "1.2"
+      ],
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "paper_id": {
+      "title": "Paper Id",
+      "type": "string"
+    },
+    "version": {
+      "title": "Version",
+      "type": "string"
+    },
+    "generated_at": {
+      "title": "Generated At",
+      "type": "string"
+    },
+    "revision": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Revision",
+      "type": "integer"
+    },
+    "analysis_status": {
+      "default": "needs_review",
+      "enum": [
+        "ready",
+        "needs_review",
+        "failed"
+      ],
+      "title": "Analysis Status",
+      "type": "string"
+    },
+    "overview": {
+      "title": "Overview",
+      "type": "string"
+    },
+    "motivation": {
+      "title": "Motivation",
+      "type": "string"
+    },
+    "contributions": {
+      "title": "Contributions",
+      "type": "string"
+    },
+    "method": {
+      "title": "Method",
+      "type": "string"
+    },
+    "mathematics": {
+      "title": "Mathematics",
+      "type": "string"
+    },
+    "training": {
+      "title": "Training",
+      "type": "string"
+    },
+    "inference": {
+      "title": "Inference",
+      "type": "string"
+    },
+    "experiments": {
+      "items": {
+        "$ref": "#/$defs/Experiment"
+      },
+      "title": "Experiments",
+      "type": "array"
+    },
+    "limitations": {
+      "title": "Limitations",
+      "type": "string"
+    },
+    "related_papers": {
+      "items": {
+        "$ref": "#/$defs/Relation"
+      },
+      "title": "Related Papers",
+      "type": "array"
+    },
+    "claims": {
+      "items": {
+        "$ref": "#/$defs/Claim"
+      },
+      "title": "Claims",
+      "type": "array"
+    },
+    "equations": {
+      "items": {
+        "$ref": "#/$defs/Equation"
+      },
+      "title": "Equations",
+      "type": "array"
+    },
+    "concept_links": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Concept Links",
+      "type": "array"
+    },
+    "quality_checks": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Quality Checks",
+      "type": "array"
+    },
+    "reading_guide": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ReadingGuide"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "self_test": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/SelfTestItem"
+      },
+      "title": "Self Test",
+      "type": "array"
+    },
+    "tutorial": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Tutorial"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "paper_id",
+    "version",
+    "overview",
+    "motivation",
+    "contributions",
+    "method",
+    "mathematics",
+    "training",
+    "inference",
+    "experiments",
+    "limitations",
+    "related_papers",
+    "claims",
+    "equations",
+    "concept_links",
+    "quality_checks"
+  ],
+  "title": "Report",
+  "type": "object"
+}

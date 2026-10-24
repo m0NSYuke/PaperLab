@@ -1,0 +1,1091 @@
+{
+  "schema_version": "1.0",
+  "description": "Standard Chinese renderings of AI / robotics terms. Used for selection lookups and injected into the local MT prompt so terminology stays consistent. Personal additions go to knowledge/glossary/user-terms.json and take precedence.",
+  "terms": [
+    {
+      "en": "ablation study",
+      "zh": "消融实验",
+      "domain": "实验"
+    },
+    {
+      "en": "ablation",
+      "zh": "消融（实验）",
+      "domain": "实验"
+    },
+    {
+      "en": "baseline",
+      "zh": "基线方法",
+      "domain": "实验"
+    },
+    {
+      "en": "benchmark",
+      "zh": "基准测试",
+      "domain": "实验"
+    },
+    {
+      "en": "held-out",
+      "zh": "留出的（未参与训练）",
+      "domain": "实验"
+    },
+    {
+      "en": "in-distribution",
+      "zh": "分布内",
+      "domain": "实验"
+    },
+    {
+      "en": "out-of-distribution",
+      "zh": "分布外",
+      "domain": "实验"
+    },
+    {
+      "en": "zero-shot",
+      "zh": "零样本",
+      "domain": "实验"
+    },
+    {
+      "en": "few-shot",
+      "zh": "少样本",
+      "domain": "实验"
+    },
+    {
+      "en": "one-shot",
+      "zh": "单样本",
+      "domain": "实验"
+    },
+    {
+      "en": "success rate",
+      "zh": "成功率",
+      "domain": "实验"
+    },
+    {
+      "en": "task progress",
+      "zh": "任务进度",
+      "domain": "实验"
+    },
+    {
+      "en": "rollout",
+      "zh": "策略执行轨迹（rollout）",
+      "domain": "强化学习"
+    },
+    {
+      "en": "episode",
+      "zh": "回合（episode）",
+      "domain": "强化学习"
+    },
+    {
+      "en": "trial",
+      "zh": "试次",
+      "domain": "实验"
+    },
+    {
+      "en": "hyperparameter",
+      "zh": "超参数",
+      "domain": "机器学习"
+    },
+    {
+      "en": "state of the art",
+      "zh": "最先进水平（SOTA）",
+      "domain": "实验"
+    },
+    {
+      "en": "state-of-the-art",
+      "zh": "最先进的",
+      "domain": "实验"
+    },
+    {
+      "en": "generalization",
+      "zh": "泛化",
+      "domain": "机器学习"
+    },
+    {
+      "en": "compositional generalization",
+      "zh": "组合泛化",
+      "domain": "机器学习"
+    },
+    {
+      "en": "overfitting",
+      "zh": "过拟合",
+      "domain": "机器学习"
+    },
+    {
+      "en": "regularization",
+      "zh": "正则化",
+      "domain": "机器学习"
+    },
+    {
+      "en": "inductive bias",
+      "zh": "归纳偏置",
+      "domain": "机器学习"
+    },
+    {
+      "en": "scaling law",
+      "zh": "缩放定律",
+      "domain": "机器学习"
+    },
+    {
+      "en": "pre-training",
+      "zh": "预训练",
+      "domain": "机器学习"
+    },
+    {
+      "en": "pretraining",
+      "zh": "预训练",
+      "domain": "机器学习"
+    },
+    {
+      "en": "post-training",
+      "zh": "后训练",
+      "domain": "机器学习"
+    },
+    {
+      "en": "fine-tuning",
+      "zh": "微调",
+      "domain": "机器学习"
+    },
+    {
+      "en": "finetuning",
+      "zh": "微调",
+      "domain": "机器学习"
+    },
+    {
+      "en": "co-training",
+      "zh": "联合训练",
+      "domain": "机器学习"
+    },
+    {
+      "en": "distillation",
+      "zh": "蒸馏",
+      "domain": "机器学习"
+    },
+    {
+      "en": "knowledge distillation",
+      "zh": "知识蒸馏",
+      "domain": "机器学习"
+    },
+    {
+      "en": "self-supervised learning",
+      "zh": "自监督学习",
+      "domain": "机器学习"
+    },
+    {
+      "en": "contrastive learning",
+      "zh": "对比学习",
+      "domain": "机器学习"
+    },
+    {
+      "en": "representation learning",
+      "zh": "表征学习",
+      "domain": "机器学习"
+    },
+    {
+      "en": "embedding",
+      "zh": "嵌入（向量）",
+      "domain": "深度学习"
+    },
+    {
+      "en": "latent space",
+      "zh": "隐空间",
+      "domain": "深度学习"
+    },
+    {
+      "en": "latent",
+      "zh": "隐变量 / 潜在表示",
+      "domain": "深度学习"
+    },
+    {
+      "en": "backbone",
+      "zh": "骨干网络",
+      "domain": "深度学习"
+    },
+    {
+      "en": "encoder",
+      "zh": "编码器",
+      "domain": "深度学习"
+    },
+    {
+      "en": "decoder",
+      "zh": "解码器",
+      "domain": "深度学习"
+    },
+    {
+      "en": "tokenizer",
+      "zh": "分词器 / 编码器（tokenizer）",
+      "domain": "深度学习"
+    },
+    {
+      "en": "token",
+      "zh": "词元（token）",
+      "domain": "深度学习"
+    },
+    {
+      "en": "attention",
+      "zh": "注意力（机制）",
+      "domain": "深度学习"
+    },
+    {
+      "en": "self-attention",
+      "zh": "自注意力",
+      "domain": "深度学习"
+    },
+    {
+      "en": "cross-attention",
+      "zh": "交叉注意力",
+      "domain": "深度学习"
+    },
+    {
+      "en": "attention mask",
+      "zh": "注意力掩码",
+      "domain": "深度学习"
+    },
+    {
+      "en": "causal mask",
+      "zh": "因果掩码",
+      "domain": "深度学习"
+    },
+    {
+      "en": "blockwise causal attention",
+      "zh": "分块因果注意力",
+      "domain": "深度学习"
+    },
+    {
+      "en": "bidirectional attention",
+      "zh": "双向注意力",
+      "domain": "深度学习"
+    },
+    {
+      "en": "key-value cache",
+      "zh": "键值缓存（KV cache）",
+      "domain": "深度学习"
+    },
+    {
+      "en": "kv cache",
+      "zh": "键值缓存",
+      "domain": "深度学习"
+    },
+    {
+      "en": "mixture of experts",
+      "zh": "混合专家（MoE）",
+      "domain": "深度学习"
+    },
+    {
+      "en": "mixture-of-experts",
+      "zh": "混合专家（MoE）",
+      "domain": "深度学习"
+    },
+    {
+      "en": "feed-forward network",
+      "zh": "前馈网络",
+      "domain": "深度学习"
+    },
+    {
+      "en": "layer normalization",
+      "zh": "层归一化",
+      "domain": "深度学习"
+    },
+    {
+      "en": "residual connection",
+      "zh": "残差连接",
+      "domain": "深度学习"
+    },
+    {
+      "en": "positional encoding",
+      "zh": "位置编码",
+      "domain": "深度学习"
+    },
+    {
+      "en": "linear projection",
+      "zh": "线性投影",
+      "domain": "深度学习"
+    },
+    {
+      "en": "multilayer perceptron",
+      "zh": "多层感知机（MLP）",
+      "domain": "深度学习"
+    },
+    {
+      "en": "convolutional neural network",
+      "zh": "卷积神经网络",
+      "domain": "深度学习"
+    },
+    {
+      "en": "vision transformer",
+      "zh": "视觉 Transformer（ViT）",
+      "domain": "视觉"
+    },
+    {
+      "en": "autoregressive",
+      "zh": "自回归的",
+      "domain": "生成模型"
+    },
+    {
+      "en": "next-token prediction",
+      "zh": "下一词元预测",
+      "domain": "生成模型"
+    },
+    {
+      "en": "teacher forcing",
+      "zh": "教师强制",
+      "domain": "生成模型"
+    },
+    {
+      "en": "gradient descent",
+      "zh": "梯度下降",
+      "domain": "优化"
+    },
+    {
+      "en": "stochastic gradient descent",
+      "zh": "随机梯度下降",
+      "domain": "优化"
+    },
+    {
+      "en": "learning rate",
+      "zh": "学习率",
+      "domain": "优化"
+    },
+    {
+      "en": "warmup",
+      "zh": "预热（学习率 warmup）",
+      "domain": "优化"
+    },
+    {
+      "en": "weight decay",
+      "zh": "权重衰减",
+      "domain": "优化"
+    },
+    {
+      "en": "batch size",
+      "zh": "批大小",
+      "domain": "优化"
+    },
+    {
+      "en": "loss function",
+      "zh": "损失函数",
+      "domain": "优化"
+    },
+    {
+      "en": "objective",
+      "zh": "目标函数",
+      "domain": "优化"
+    },
+    {
+      "en": "cross-entropy",
+      "zh": "交叉熵",
+      "domain": "优化"
+    },
+    {
+      "en": "mean squared error",
+      "zh": "均方误差",
+      "domain": "优化"
+    },
+    {
+      "en": "convergence",
+      "zh": "收敛",
+      "domain": "优化"
+    },
+    {
+      "en": "diffusion model",
+      "zh": "扩散模型",
+      "domain": "生成模型"
+    },
+    {
+      "en": "diffusion policy",
+      "zh": "扩散策略",
+      "domain": "生成模型"
+    },
+    {
+      "en": "denoising",
+      "zh": "去噪",
+      "domain": "生成模型"
+    },
+    {
+      "en": "noise schedule",
+      "zh": "噪声调度",
+      "domain": "生成模型"
+    },
+    {
+      "en": "score function",
+      "zh": "得分函数",
+      "domain": "生成模型"
+    },
+    {
+      "en": "score matching",
+      "zh": "得分匹配",
+      "domain": "生成模型"
+    },
+    {
+      "en": "flow matching",
+      "zh": "流匹配",
+      "domain": "生成模型"
+    },
+    {
+      "en": "conditional flow matching",
+      "zh": "条件流匹配",
+      "domain": "生成模型"
+    },
+    {
+      "en": "rectified flow",
+      "zh": "整流（rectified flow）",
+      "domain": "生成模型"
+    },
+    {
+      "en": "vector field",
+      "zh": "向量场",
+      "domain": "生成模型"
+    },
+    {
+      "en": "velocity field",
+      "zh": "速度场",
+      "domain": "生成模型"
+    },
+    {
+      "en": "probability path",
+      "zh": "概率路径",
+      "domain": "生成模型"
+    },
+    {
+      "en": "optimal transport",
+      "zh": "最优传输",
+      "domain": "生成模型"
+    },
+    {
+      "en": "ordinary differential equation",
+      "zh": "常微分方程（ODE）",
+      "domain": "数学"
+    },
+    {
+      "en": "stochastic differential equation",
+      "zh": "随机微分方程（SDE）",
+      "domain": "数学"
+    },
+    {
+      "en": "euler integration",
+      "zh": "欧拉积分",
+      "domain": "数学"
+    },
+    {
+      "en": "integration step",
+      "zh": "积分步",
+      "domain": "数学"
+    },
+    {
+      "en": "classifier-free guidance",
+      "zh": "无分类器引导",
+      "domain": "生成模型"
+    },
+    {
+      "en": "variational autoencoder",
+      "zh": "变分自编码器（VAE）",
+      "domain": "生成模型"
+    },
+    {
+      "en": "evidence lower bound",
+      "zh": "证据下界（ELBO）",
+      "domain": "生成模型"
+    },
+    {
+      "en": "generative adversarial network",
+      "zh": "生成对抗网络（GAN）",
+      "domain": "生成模型"
+    },
+    {
+      "en": "video generation",
+      "zh": "视频生成",
+      "domain": "生成模型"
+    },
+    {
+      "en": "world model",
+      "zh": "世界模型",
+      "domain": "具身智能"
+    },
+    {
+      "en": "world action model",
+      "zh": "世界动作模型",
+      "domain": "具身智能"
+    },
+    {
+      "en": "vision-language model",
+      "zh": "视觉语言模型（VLM）",
+      "domain": "多模态"
+    },
+    {
+      "en": "vision-language-action model",
+      "zh": "视觉-语言-动作模型（VLA）",
+      "domain": "具身智能"
+    },
+    {
+      "en": "vision-language-action",
+      "zh": "视觉-语言-动作",
+      "domain": "具身智能"
+    },
+    {
+      "en": "large language model",
+      "zh": "大语言模型",
+      "domain": "NLP"
+    },
+    {
+      "en": "foundation model",
+      "zh": "基础模型",
+      "domain": "机器学习"
+    },
+    {
+      "en": "robot foundation model",
+      "zh": "机器人基础模型",
+      "domain": "具身智能"
+    },
+    {
+      "en": "generalist policy",
+      "zh": "通用策略",
+      "domain": "具身智能"
+    },
+    {
+      "en": "generalist robot policy",
+      "zh": "通用机器人策略",
+      "domain": "具身智能"
+    },
+    {
+      "en": "policy",
+      "zh": "策略",
+      "domain": "强化学习"
+    },
+    {
+      "en": "action expert",
+      "zh": "动作专家（模块）",
+      "domain": "具身智能"
+    },
+    {
+      "en": "action chunk",
+      "zh": "动作块",
+      "domain": "具身智能"
+    },
+    {
+      "en": "action chunking",
+      "zh": "动作分块",
+      "domain": "具身智能"
+    },
+    {
+      "en": "action horizon",
+      "zh": "动作时域",
+      "domain": "具身智能"
+    },
+    {
+      "en": "action space",
+      "zh": "动作空间",
+      "domain": "具身智能"
+    },
+    {
+      "en": "action tokenization",
+      "zh": "动作词元化",
+      "domain": "具身智能"
+    },
+    {
+      "en": "observation",
+      "zh": "观测",
+      "domain": "具身智能"
+    },
+    {
+      "en": "proprioception",
+      "zh": "本体感知",
+      "domain": "具身智能"
+    },
+    {
+      "en": "proprioceptive state",
+      "zh": "本体感知状态",
+      "domain": "具身智能"
+    },
+    {
+      "en": "proprioceptive",
+      "zh": "本体感知的",
+      "domain": "具身智能"
+    },
+    {
+      "en": "joint angle",
+      "zh": "关节角",
+      "domain": "机器人"
+    },
+    {
+      "en": "end effector",
+      "zh": "末端执行器",
+      "domain": "机器人"
+    },
+    {
+      "en": "end-effector",
+      "zh": "末端执行器",
+      "domain": "机器人"
+    },
+    {
+      "en": "gripper",
+      "zh": "夹爪",
+      "domain": "机器人"
+    },
+    {
+      "en": "dexterous hand",
+      "zh": "灵巧手",
+      "domain": "机器人"
+    },
+    {
+      "en": "dexterous manipulation",
+      "zh": "灵巧操作",
+      "domain": "机器人"
+    },
+    {
+      "en": "manipulation",
+      "zh": "操作（机械臂操作）",
+      "domain": "机器人"
+    },
+    {
+      "en": "mobile manipulator",
+      "zh": "移动操作机器人",
+      "domain": "机器人"
+    },
+    {
+      "en": "bimanual",
+      "zh": "双臂的",
+      "domain": "机器人"
+    },
+    {
+      "en": "embodiment",
+      "zh": "（机器人）本体",
+      "domain": "具身智能"
+    },
+    {
+      "en": "cross-embodiment",
+      "zh": "跨本体",
+      "domain": "具身智能"
+    },
+    {
+      "en": "embodied ai",
+      "zh": "具身智能",
+      "domain": "具身智能"
+    },
+    {
+      "en": "embodied intelligence",
+      "zh": "具身智能",
+      "domain": "具身智能"
+    },
+    {
+      "en": "teleoperation",
+      "zh": "遥操作",
+      "domain": "机器人"
+    },
+    {
+      "en": "demonstration",
+      "zh": "示范（数据）",
+      "domain": "具身智能"
+    },
+    {
+      "en": "imitation learning",
+      "zh": "模仿学习",
+      "domain": "具身智能"
+    },
+    {
+      "en": "behavior cloning",
+      "zh": "行为克隆",
+      "domain": "具身智能"
+    },
+    {
+      "en": "behavioral cloning",
+      "zh": "行为克隆",
+      "domain": "具身智能"
+    },
+    {
+      "en": "sim-to-real",
+      "zh": "仿真到现实迁移",
+      "domain": "机器人"
+    },
+    {
+      "en": "sim2real",
+      "zh": "仿真到现实迁移",
+      "domain": "机器人"
+    },
+    {
+      "en": "domain randomization",
+      "zh": "域随机化",
+      "domain": "机器人"
+    },
+    {
+      "en": "whole-body control",
+      "zh": "全身控制",
+      "domain": "机器人"
+    },
+    {
+      "en": "locomotion",
+      "zh": "运动（足式移动）",
+      "domain": "机器人"
+    },
+    {
+      "en": "humanoid",
+      "zh": "人形机器人",
+      "domain": "机器人"
+    },
+    {
+      "en": "control frequency",
+      "zh": "控制频率",
+      "domain": "机器人"
+    },
+    {
+      "en": "inverse kinematics",
+      "zh": "逆运动学",
+      "domain": "机器人"
+    },
+    {
+      "en": "trajectory",
+      "zh": "轨迹",
+      "domain": "机器人"
+    },
+    {
+      "en": "long-horizon task",
+      "zh": "长时程任务",
+      "domain": "具身智能"
+    },
+    {
+      "en": "long-horizon",
+      "zh": "长时程的",
+      "domain": "具身智能"
+    },
+    {
+      "en": "high-level policy",
+      "zh": "高层策略",
+      "domain": "具身智能"
+    },
+    {
+      "en": "low-level policy",
+      "zh": "底层策略",
+      "domain": "具身智能"
+    },
+    {
+      "en": "language-conditioned",
+      "zh": "语言条件的",
+      "domain": "具身智能"
+    },
+    {
+      "en": "instruction following",
+      "zh": "指令跟随",
+      "domain": "具身智能"
+    },
+    {
+      "en": "real-time chunking",
+      "zh": "实时分块（RTC）",
+      "domain": "具身智能"
+    },
+    {
+      "en": "inference latency",
+      "zh": "推理延迟",
+      "domain": "工程"
+    },
+    {
+      "en": "reinforcement learning",
+      "zh": "强化学习",
+      "domain": "强化学习"
+    },
+    {
+      "en": "reward",
+      "zh": "奖励",
+      "domain": "强化学习"
+    },
+    {
+      "en": "reward model",
+      "zh": "奖励模型",
+      "domain": "强化学习"
+    },
+    {
+      "en": "value function",
+      "zh": "价值函数",
+      "domain": "强化学习"
+    },
+    {
+      "en": "advantage",
+      "zh": "优势（函数）",
+      "domain": "强化学习"
+    },
+    {
+      "en": "on-policy",
+      "zh": "同策略的",
+      "domain": "强化学习"
+    },
+    {
+      "en": "off-policy",
+      "zh": "异策略的",
+      "domain": "强化学习"
+    },
+    {
+      "en": "offline reinforcement learning",
+      "zh": "离线强化学习",
+      "domain": "强化学习"
+    },
+    {
+      "en": "policy gradient",
+      "zh": "策略梯度",
+      "domain": "强化学习"
+    },
+    {
+      "en": "markov decision process",
+      "zh": "马尔可夫决策过程",
+      "domain": "强化学习"
+    },
+    {
+      "en": "exploration",
+      "zh": "探索",
+      "domain": "强化学习"
+    },
+    {
+      "en": "human-in-the-loop",
+      "zh": "人在回路",
+      "domain": "强化学习"
+    },
+    {
+      "en": "anomaly detection",
+      "zh": "异常检测",
+      "domain": "视觉"
+    },
+    {
+      "en": "anomaly segmentation",
+      "zh": "异常分割",
+      "domain": "视觉"
+    },
+    {
+      "en": "zero-shot anomaly detection",
+      "zh": "零样本异常检测",
+      "domain": "视觉"
+    },
+    {
+      "en": "industrial anomaly detection",
+      "zh": "工业异常检测",
+      "domain": "视觉"
+    },
+    {
+      "en": "anomaly map",
+      "zh": "异常图",
+      "domain": "视觉"
+    },
+    {
+      "en": "anomaly score",
+      "zh": "异常分数",
+      "domain": "视觉"
+    },
+    {
+      "en": "image-level",
+      "zh": "图像级",
+      "domain": "视觉"
+    },
+    {
+      "en": "pixel-level",
+      "zh": "像素级",
+      "domain": "视觉"
+    },
+    {
+      "en": "semantic segmentation",
+      "zh": "语义分割",
+      "domain": "视觉"
+    },
+    {
+      "en": "instance segmentation",
+      "zh": "实例分割",
+      "domain": "视觉"
+    },
+    {
+      "en": "object detection",
+      "zh": "目标检测",
+      "domain": "视觉"
+    },
+    {
+      "en": "bounding box",
+      "zh": "边界框",
+      "domain": "视觉"
+    },
+    {
+      "en": "feature map",
+      "zh": "特征图",
+      "domain": "视觉"
+    },
+    {
+      "en": "patch",
+      "zh": "图像块（patch）",
+      "domain": "视觉"
+    },
+    {
+      "en": "patch token",
+      "zh": "图像块词元",
+      "domain": "视觉"
+    },
+    {
+      "en": "class token",
+      "zh": "类别词元（CLS token）",
+      "domain": "视觉"
+    },
+    {
+      "en": "receptive field",
+      "zh": "感受野",
+      "domain": "视觉"
+    },
+    {
+      "en": "data augmentation",
+      "zh": "数据增强",
+      "domain": "视觉"
+    },
+    {
+      "en": "point cloud",
+      "zh": "点云",
+      "domain": "视觉"
+    },
+    {
+      "en": "depth estimation",
+      "zh": "深度估计",
+      "domain": "视觉"
+    },
+    {
+      "en": "optical flow",
+      "zh": "光流",
+      "domain": "视觉"
+    },
+    {
+      "en": "prompt learning",
+      "zh": "提示学习",
+      "domain": "多模态"
+    },
+    {
+      "en": "prompt",
+      "zh": "提示（词）",
+      "domain": "多模态"
+    },
+    {
+      "en": "in-context learning",
+      "zh": "上下文学习",
+      "domain": "NLP"
+    },
+    {
+      "en": "chain-of-thought",
+      "zh": "思维链",
+      "domain": "NLP"
+    },
+    {
+      "en": "grounding",
+      "zh": "定位 / 落地（grounding）",
+      "domain": "多模态"
+    },
+    {
+      "en": "area under the curve",
+      "zh": "曲线下面积（AUC）",
+      "domain": "实验"
+    },
+    {
+      "en": "precision",
+      "zh": "精确率",
+      "domain": "实验"
+    },
+    {
+      "en": "recall",
+      "zh": "召回率",
+      "domain": "实验"
+    },
+    {
+      "en": "f1 score",
+      "zh": "F1 分数",
+      "domain": "实验"
+    },
+    {
+      "en": "mean average precision",
+      "zh": "平均精度均值（mAP）",
+      "domain": "实验"
+    },
+    {
+      "en": "confidence interval",
+      "zh": "置信区间",
+      "domain": "实验"
+    },
+    {
+      "en": "standard deviation",
+      "zh": "标准差",
+      "domain": "实验"
+    },
+    {
+      "en": "statistically significant",
+      "zh": "统计显著的",
+      "domain": "实验"
+    },
+    {
+      "en": "throughput",
+      "zh": "吞吐量",
+      "domain": "工程"
+    },
+    {
+      "en": "latency",
+      "zh": "延迟",
+      "domain": "工程"
+    },
+    {
+      "en": "quantization",
+      "zh": "量化",
+      "domain": "工程"
+    },
+    {
+      "en": "inference",
+      "zh": "推理",
+      "domain": "机器学习"
+    },
+    {
+      "en": "training recipe",
+      "zh": "训练方案",
+      "domain": "机器学习"
+    },
+    {
+      "en": "data mixture",
+      "zh": "数据配比",
+      "domain": "机器学习"
+    },
+    {
+      "en": "curriculum learning",
+      "zh": "课程学习",
+      "domain": "机器学习"
+    },
+    {
+      "en": "ground truth",
+      "zh": "真值",
+      "domain": "机器学习"
+    },
+    {
+      "en": "supervised",
+      "zh": "有监督的",
+      "domain": "机器学习"
+    },
+    {
+      "en": "unsupervised",
+      "zh": "无监督的",
+      "domain": "机器学习"
+    },
+    {
+      "en": "end-to-end",
+      "zh": "端到端",
+      "domain": "机器学习"
+    },
+    {
+      "en": "multimodal",
+      "zh": "多模态",
+      "domain": "多模态"
+    },
+    {
+      "en": "modality",
+      "zh": "模态",
+      "domain": "多模态"
+    },
+    {
+      "en": "chunk",
+      "zh": "动作块",
+      "domain": "具身智能"
+    },
+    {
+      "en": "chunk length",
+      "zh": "动作块长度",
+      "domain": "具身智能"
+    },
+    {
+      "en": "compounding error",
+      "zh": "累积误差",
+      "domain": "具身智能"
+    },
+    {
+      "en": "receding horizon",
+      "zh": "滚动时域",
+      "domain": "机器人"
+    }
+  ]
+}

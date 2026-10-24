@@ -1,0 +1,180 @@
+/* Outline on the report's right edge: one bar per chapter at rest, the chapter tree on hover. */
+.report-pane {
+  position: relative;
+}
+.report-toc {
+  position: absolute;
+  top: 66px;
+  right: 6px;
+  z-index: 20;
+  display: flex;
+  justify-content: flex-end;
+  max-height: calc(100% - 90px);
+}
+.toc-bars {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 9px;
+  padding: 8px 6px;
+  overflow: hidden;
+}
+.toc-bars i {
+  display: block;
+  width: 16px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border);
+  flex-shrink: 0;
+  transition: background 0.15s, width 0.15s;
+}
+.toc-bars i.on {
+  background: var(--accent);
+  width: 22px;
+}
+.toc-panel {
+  display: none;
+  flex-direction: column;
+  width: 264px;
+  max-height: 100%;
+  overflow: auto;
+  padding: 10px 8px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+}
+.report-toc:hover .toc-bars,
+.report-toc:focus-within .toc-bars {
+  display: none;
+}
+.report-toc:hover .toc-panel,
+.report-toc:focus-within .toc-panel {
+  display: flex;
+  animation: fade-up 0.16s var(--ease-out);
+}
+.toc-panel button {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+}
+.toc-panel .toc-root {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+  padding: 4px 8px 10px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+}
+.toc-panel ol,
+.toc-panel ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.toc-chapter {
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+}
+.toc-chapter:hover {
+  background: var(--soft);
+}
+.here > .toc-chapter {
+  background: var(--accent-soft);
+}
+.toc-chapter-link {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.toc-chapter-link span {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--faint);
+}
+.here > .toc-chapter .toc-chapter-link,
+.here > .toc-chapter .toc-chapter-link span {
+  color: var(--accent);
+}
+.toc-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 6px;
+  color: var(--faint);
+  flex-shrink: 0;
+}
+.toc-toggle small {
+  font-size: 11px;
+}
+.toc-toggle svg {
+  transition: transform 0.15s;
+}
+.toc-toggle.open svg {
+  transform: rotate(90deg);
+}
+.toc-panel ul {
+  margin: 2px 0 6px 18px;
+  padding-left: 8px;
+  border-left: 1px solid var(--border);
+}
+.toc-panel ul button {
+  display: block;
+  width: 100%;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.toc-panel ul button:hover {
+  background: var(--soft);
+  color: var(--text);
+}
+.toc-panel ul button.on {
+  color: var(--accent);
+  font-weight: 500;
+}
+.report-scroll h2,
+.report-scroll h3,
+.report-scroll h4 {
+  scroll-margin-top: 18px;
+}
+/* With the report full width there is room to keep the outline open. */
+@media (min-width: 1360px) {
+  .view-report > .report-pane .report-toc {
+    right: 20px;
+  }
+  .view-report > .report-pane .toc-bars {
+    display: none;
+  }
+  .view-report > .report-pane .toc-panel {
+    display: flex;
+    width: 240px;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    border-left: 1px solid var(--border);
+    border-radius: 0;
+  }
+}
+@media (max-width: 899px) {
+  .report-toc {
+    display: none;
+  }
+}

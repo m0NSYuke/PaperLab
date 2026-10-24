@@ -1,0 +1,100 @@
+{
+  "$defs": {
+    "SourcePaper": {
+      "additionalProperties": false,
+      "properties": {
+        "paper_id": {
+          "title": "Paper Id",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "paper_id",
+        "version"
+      ],
+      "title": "SourcePaper",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "skill_id": {
+      "maxLength": 100,
+      "title": "Skill Id",
+      "type": "string"
+    },
+    "title": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    },
+    "instruction": {
+      "maxLength": 6000,
+      "minLength": 1,
+      "title": "Instruction",
+      "type": "string"
+    },
+    "material": {
+      "default": "",
+      "maxLength": 60000,
+      "title": "Material",
+      "type": "string"
+    },
+    "papers": {
+      "items": {
+        "$ref": "#/$defs/SourcePaper"
+      },
+      "maxItems": 3,
+      "title": "Papers",
+      "type": "array"
+    },
+    "section": {
+      "default": "intro",
+      "enum": [
+        "title",
+        "abstract",
+        "intro",
+        "related-work",
+        "method",
+        "experiments",
+        "discussion",
+        "conclusion"
+      ],
+      "title": "Section",
+      "type": "string"
+    },
+    "language": {
+      "default": "zh",
+      "enum": [
+        "zh",
+        "en"
+      ],
+      "title": "Language",
+      "type": "string"
+    },
+    "journal": {
+      "default": "generic",
+      "enum": [
+        "generic",
+        "nature",
+        "nature-family",
+        "nat-comms",
+        "nat-mach-intell"
+      ],
+      "title": "Journal",
+      "type": "string"
+    }
+  },
+  "required": [
+    "skill_id",
+    "title",
+    "instruction"
+  ],
+  "title": "ResearchInput",
+  "type": "object"
+}

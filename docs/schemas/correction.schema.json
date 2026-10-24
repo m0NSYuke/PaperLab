@@ -1,0 +1,67 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "claim_id": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Claim Id",
+      "type": "string"
+    },
+    "type": {
+      "enum": [
+        "factual_error",
+        "mathematical_error",
+        "citation_error",
+        "missing_information",
+        "unclear_explanation",
+        "other"
+      ],
+      "title": "Type",
+      "type": "string"
+    },
+    "original_text": {
+      "maxLength": 100000,
+      "title": "Original Text",
+      "type": "string"
+    },
+    "corrected_text": {
+      "maxLength": 100000,
+      "minLength": 1,
+      "title": "Corrected Text",
+      "type": "string"
+    },
+    "reason": {
+      "default": "",
+      "maxLength": 100000,
+      "title": "Reason",
+      "type": "string"
+    },
+    "status": {
+      "default": "accepted",
+      "enum": [
+        "accepted",
+        "open",
+        "dismissed"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "correction_id": {
+      "title": "Correction Id",
+      "type": "string"
+    },
+    "created_at": {
+      "title": "Created At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "claim_id",
+    "type",
+    "original_text",
+    "corrected_text",
+    "correction_id"
+  ],
+  "title": "Correction",
+  "type": "object"
+}
