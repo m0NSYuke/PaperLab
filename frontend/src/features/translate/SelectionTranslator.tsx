@@ -137,6 +137,8 @@ export default function SelectionTranslator({
     [marked, setMarked] = useState<Marked | null>(null),
     [markError, setMarkError] = useState("");
   const cardRef = useRef<HTMLDivElement>(null),
+    /** The selected passage, kept after the selection itself is gone, so the card can follow it. */
+    rangeRef = useRef<Range | null>(null),
     seq = useRef(0),
     dockedRef = useRef(docked),
     draggedRef = useRef(dragged);
@@ -151,6 +153,7 @@ export default function SelectionTranslator({
   useEffect(() => writeLocal("paperlab.translatorDockWidth", dockWidth), [dockWidth]);
   const close = useCallback(() => {
     seq.current++;
+    rangeRef.current = null;
     setCard(null);
     setSaving(null);
     setCopied(false);
@@ -222,6 +225,7 @@ export default function SelectionTranslator({
         const rect = sel.getRangeAt(0).getBoundingClientRect();
         if (!rect.width && !rect.height) return;
         const id = ++seq.current;
+        rangeRef.current = sel.getRangeAt(0).cloneRange();
         GAP = touch ? 30 : 10;
         setCopied(false);
         setSaving(null);
@@ -255,8 +259,28 @@ export default function SelectionTranslator({
     const onDown = (e: MouseEvent) => {
       if (!cardRef.current?.contains(e.target as Node) && !sticky()) close();
     };
+    // Scrolling keeps the translation while its passage is on screen (a floating
+    // card follows it) and closes it, in every mode, once the passage scrolls away.
+    let follow = 0;
     const onScroll = (e: Event) => {
-      if (!cardRef.current?.contains(e.target as Node) && !sticky()) close();
+      if (!textRef.current || cardRef.current?.contains(e.target as Node)) return;
+      const scroller = e.target instanceof Element ? e.target : null;
+      cancelAnimationFrame(follow);
+      follow = requestAnimationFrame(() => {
+        const range = rangeRef.current;
+        // Scrolling some other pane leaves this passage where it was.
+        if (!range || (scroller && !scroller.contains(range.commonAncestorContainer))) return;
+        const r = range.getBoundingClientRect();
+        // Bounds of the pane that scrolled: a passage hidden under its edge counts as gone.
+        const view = scroller?.getBoundingClientRect() ?? { top: 0, bottom: window.innerHeight };
+        const visible = (r.width > 0 || r.height > 0) && r.bottom > view.top && r.top < view.bottom;
+        if (!visible) {
+          window.getSelection()?.removeAllRanges(); // so a later mouseup cannot bring it back
+          close();
+        } else if (!sticky()) {
+          setCard((c) => c && { ...c, anchor: { left: r.left, top: r.top, right: r.right, bottom: r.bottom } });
+        }
+      });
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") close();
@@ -275,6 +299,7 @@ export default function SelectionTranslator({
     document.addEventListener("scroll", onScroll, true);
     return () => {
       clearTimeout(timer);
+      cancelAnimationFrame(follow);
       document.removeEventListener("pointerdown", onPointer, true);
       document.removeEventListener("selectionchange", onSelection);
       document.removeEventListener("mouseup", onUp);

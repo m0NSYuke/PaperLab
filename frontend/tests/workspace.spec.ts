@@ -253,7 +253,7 @@ test("reader layout: collapsible panes, focus mode and selection dictionary card
   test.skip(!status.dictionary, "offline dictionary not installed on this machine");
   const word = page.locator('.pdfViewer .page[data-page-number="1"] .textLayer span', { hasText: /action chunk/ }).first();
   await word.scrollIntoViewIfNeeded();
-  await word.evaluate((el) => {
+  const select = () => word.evaluate((el) => {
     // PDF.js may split a line into several text nodes; select inside the one with the word.
     const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
     let text = walker.nextNode()!;
@@ -266,6 +266,7 @@ test("reader layout: collapsible panes, focus mode and selection dictionary card
     getSelection()!.addRange(range);
     el.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
   });
+  await select();
   const card = page.getByRole("dialog", { name: "划词翻译" });
   await expect(card).toContainText("动作块");
   await expect(card).toContainText("离线词典");
@@ -280,6 +281,18 @@ test("reader layout: collapsible panes, focus mode and selection dictionary card
   ).toBe(true);
   await card.getByRole("button", { name: "停靠到侧边" }).click();
   await expect(card).toHaveClass(/docked/);
+  // The translation belongs to its passage: a small scroll keeps it, scrolling
+  // past the passage closes it (docked too) and drops the selection.
+  const pdf = page.locator(".pdf-container");
+  await pdf.evaluate((el) => el.scrollBy(0, 40));
+  await page.waitForTimeout(300);
+  await expect(card).toBeVisible();
+  await pdf.evaluate((el) => el.scrollBy(0, 1500));
+  await expect(card).toHaveCount(0);
+  expect(await page.evaluate(() => getSelection()!.toString())).toBe("");
+  await word.scrollIntoViewIfNeeded();
+  await select();
+  await expect(card).toContainText("动作块");
   await card.getByRole("button", { name: "改为浮动卡片" }).click();
   await page.keyboard.press("Escape");
   await expect(card).toHaveCount(0);
