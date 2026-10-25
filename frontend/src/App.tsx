@@ -3,6 +3,7 @@ import { Command as CommandIcon, Moon, Sun, ShieldCheck } from "lucide-react";
 import Library from "./pages/Library";
 const Reader = lazy(() => import("./pages/Reader"));
 const ResearchWorkspace = lazy(() => import("./pages/ResearchWorkspace"));
+const Memos = lazy(() => import("./pages/Memos"));
 import "./features/research/research.css";
 import { api, base, readLocal, USER_NAME, writeLocal } from "./api";
 import type { Paper } from "./types";
@@ -96,6 +97,15 @@ export default function App() {
           keywords: "paper sepia eye care background 护眼 米黄 纸张 背景",
           run: () => setPaperTone(paperTone === "sepia" ? "white" : "sepia"),
         },
+        {
+          id: "memos",
+          group: "导航",
+          label: "打开随记",
+          keywords: "memos ideas notes 随记 想法 笔记",
+          run: () => {
+            location.hash = "/memos";
+          },
+        },
         ...(paper
           ? [
               {
@@ -116,6 +126,7 @@ export default function App() {
   const path = route.split("?")[0];
   const params = new URLSearchParams(route.split("?")[1]||"");
   const researchRoute = ["#/writing","#/research","#/skills","#/outputs"].includes(path);
+  const memosRoute = path === "#/memos";
   // The reader brings its own compact bar, so the paper gets the full height.
   const readerRoute = path.startsWith("#/paper/");
   return (
@@ -157,7 +168,8 @@ export default function App() {
         </div>
       </header>}
       {!paper&&!routeLoading&&<nav className="workspace-navigation" aria-label="科研工作区">
-        <a href="#/" aria-current={!researchRoute?"page":undefined}>读论文<span>Library</span></a>
+        <a href="#/" aria-current={!researchRoute&&!memosRoute?"page":undefined}>读论文<span>Library</span></a>
+        <a href="#/memos" aria-current={memosRoute?"page":undefined}>随记<span>Memos</span></a>
         <a href="#/writing" aria-current={["#/writing","#/research"].includes(path)?"page":undefined}>写作台<span>Studio</span></a>
         <a href="#/skills" aria-current={path==="#/skills"?"page":undefined}>研究工具<span>Skills</span></a>
         <a href="#/outputs" aria-current={path==="#/outputs"?"page":undefined}>成果库<span>Outputs</span></a>
@@ -182,6 +194,10 @@ export default function App() {
               setDirty(false);
             }}
           />
+        </Suspense>
+      ) : memosRoute ? (
+        <Suspense fallback={<div className="empty-state">正在打开随记…</div>}>
+          <Memos requested={params.get("id") || undefined} onDirtyChange={setDirty} />
         </Suspense>
       ) : researchRoute ? (
         <Suspense fallback={<div className="empty-state">正在打开科研工作台…</div>}>

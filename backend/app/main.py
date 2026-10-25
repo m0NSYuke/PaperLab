@@ -345,6 +345,8 @@ def create_app(root: Path | None = None, lan_token: str | None = None, app_root:
     register_research(app, root)
     from .questions import register_questions
     register_questions(app, root)
+    from .memos import register_memos
+    register_memos(app, root)
     # One local production server. API routes are registered before SPA fallback.
     dist = safe_path(app_root, "frontend", "dist")
     if dist.exists():

@@ -37,6 +37,12 @@
 - **笔记与纠错**：Markdown + 公式笔记；对 AI 解释「标记问题」会作为事件保留，重新生成报告也不会覆盖人工内容。
 - **带着上下文提问**：自动整理论文、页码和选中内容，复制到 Claude / ChatGPT / Kimi / DeepSeek，支持苏格拉底式追问和费曼检查两种模式。
 
+**随记（不属于某一篇论文的想法）**
+- 顶部导航「随记」：左边是随记列表（置顶、按最近修改排序、搜索标题 / 标签 / 正文），右边直接写。
+- 截图直接粘贴或拖进来，图片在正文里原样显示，光标落到图片下一行接着写；也支持 Markdown、$公式$、代码段和「源码」模式。
+- 边写边自动保存，`Ctrl S` 立即保存；删除后 10 秒内可撤销，文件进 `memos/.trash`，较早版本留在 `memos/.history`。
+- 每条随记是数据目录 `memos/` 下的一个 Markdown 文件，图片在 `memos/assets/`，用 Typora、Obsidian 打开也能正常显示。
+
 **更多**
 - `Ctrl K` 命令面板与全键盘操作；Claude 风格界面，深浅色主题；手机 / iPad 同一 Wi-Fi 下带口令访问。
 - 科研工作台：接入 22 项 [Nature Skills](THIRD_PARTY_NOTICES.md) 科研任务（写作、润色、引用核查、绘图等，需单独安装）。
@@ -109,6 +115,7 @@ python scripts\verify-nature-skills.py       # 可选：再次核验
 <数据目录>/
   papers/<ID>/<vN>/        metadata.json · report.json/md · notes.md · study.json · corrections.jsonl
   local-assets/<ID>/<vN>/  原始 PDF、LaTeX 源码、页文本缓存
+  memos/                   随记：<id>.md · assets/ 图片 · .history/ 旧版本 · .trash/ 已删除
   concepts/  knowledge/  research-outputs/
 ```
 

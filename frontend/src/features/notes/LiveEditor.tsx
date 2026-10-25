@@ -118,12 +118,18 @@ export default function LiveEditor({
     }
   });
 
+  // A pasted image goes in as its own block (shown rendered), and an empty line
+  // opens under it so typing simply continues. On an empty line, the image takes its place.
   const pasteImages = async (files: File[]) => {
+    const index = edit?.index ?? -1;
     const links = await onImages(files);
     if (!links.length) return;
     const draft = area.current?.value ?? "";
-    const after = settledIndex(draft);
-    insertAfter(splitBlocks(commit(draft)), after, links.join("\n\n"));
+    const base = splitBlocks(commit(draft));
+    const at = Math.min(draft.trim() ? settledIndex(draft) + 1 : Math.max(index, 0), base.length);
+    const next = [...base.slice(0, at), ...links, "", ...base.slice(at)];
+    onChange(join(next));
+    open(next, at + links.length, 0);
   };
   const imageFiles = (list: FileList) => [...list].filter((f) => f.type.startsWith("image/"));
 
