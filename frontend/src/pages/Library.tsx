@@ -22,6 +22,7 @@ import {
 import { api, readLocal, USER_NAME, writeLocal } from "../api";
 import type { BackupStatus, Paper, ResearchLine, StudyOverview, StudySummary } from "../types";
 import Modal from "../components/Modal";
+import CardBrief from "../features/library/CardBrief";
 import { useCommands, type CommandSource } from "../components/CommandPalette";
 const GREEK: Record<string, string> = {
   alpha: "α", beta: "β", gamma: "γ", delta: "δ", epsilon: "ε", lambda: "λ",
@@ -642,10 +643,13 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
                     <StudyMeter paper={p} summary={summary(p)} />
                     </button>
                     <div className="card-footer">
-                      <span className={`analysis-badge ${p.analysis_status}`}>
-                        <span />
-                        {analysisLabel[p.analysis_status]}
-                      </span>
+                      <div className="card-footer-left">
+                        <span className={`analysis-badge ${p.analysis_status}`}>
+                          <span />
+                          {analysisLabel[p.analysis_status]}
+                        </span>
+                        <CardBrief paper={p} lines={lines} />
+                      </div>
                       <div className="card-actions">
                         <button
                           className="open-study"

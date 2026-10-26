@@ -42,6 +42,22 @@ def _private_client(host: str | None) -> bool:
         return False
 
 
+def report_brief(report: dict | None) -> dict:
+    if not report:
+        return {"summary": "", "problem": "", "focus": [], "depth": None, "context": ""}
+    triage = report.get("triage") or {}
+    # Reports open with a bold one-line takeaway; keep its first sentence without markup or claim tags.
+    first = next((p for p in report.get("overview", "").split("\n\n") if p.strip()), "")
+    plain = re.sub(r"\s*\[[^\]]*\]", "", first.replace("**", "")).strip()
+    plain = re.sub(r"^一句话[：:]\s*", "", plain)
+    summary = plain.split("。")[0] + "。" if "。" in plain else plain
+    summary = summary if len(summary) >= 8 else triage.get("core_change", "")
+    guide = (report.get("reading_guide") or {}).get("must_read") or []
+    focus = triage.get("focus") or [f"p.{s['page']} {s['label']}" for s in guide[:3]]
+    return {"summary": summary[:220], "problem": triage.get("problem", ""), "focus": focus[:5],
+            "depth": triage.get("depth"), "context": triage.get("user_context", "")}
+
+
 def create_app(root: Path | None = None, lan_token: str | None = None, app_root: Path | None = None) -> FastAPI:
     """LAN mode (``lan_token`` or PAPERLAB_LAN_TOKEN) admits devices on the same
     private network that hold the access key; loopback use is unchanged."""
@@ -159,6 +175,13 @@ def create_app(root: Path | None = None, lan_token: str | None = None, app_root:
             return {"report": None}
         with data_lock(root):
             return {"report": Report.model_validate(read_json(path)).model_dump()}
+
+    @app.get("/api/papers/{paper_id}/{version}/brief")
+    def brief(paper_id: str, version: str):
+        """What the library card's hover shows: the paper in one sentence and where to focus."""
+        get_meta(paper_id, version)
+        path = file_path(paper_id, version, "report.json")
+        return report_brief(read_json(path) if path.exists() else None)
 
     @app.get("/api/papers/{paper_id}/{version}/source-index")
     def source_index(paper_id: str, version: str):

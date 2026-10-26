@@ -45,3 +45,15 @@ def test_backup_snapshots_user_data_and_skips_when_unchanged(tmp_path):
     notes.write_text("我的笔记，补一句", encoding="utf-8")
     second = client.post("/api/backup").json()
     assert second["count"] == 2 and second["last"]["file"] != first["last"]["file"]
+
+
+def test_card_brief_takes_the_bold_takeaway_and_focus():
+    from app.main import report_brief
+    report = {"overview": "**一句话：先让小模型试做，质量不过关才让大模型重做。** 其余说明。[sdvg-core]\n\n第二段",
+              "triage": {"depth": "selective", "focus": ["式 1", "表 2"], "problem": "慢", "user_context": ""}}
+    brief = report_brief(report)
+    assert brief["summary"] == "先让小模型试做，质量不过关才让大模型重做。"
+    assert brief["focus"] == ["式 1", "表 2"] and brief["depth"] == "selective"
+    # Older reports without triage fall back to the must-read pages.
+    old = {"overview": "**VisualAD 学的是两种视觉参照。** 更多。", "reading_guide": {"must_read": [{"page": 4, "label": "式(2)", "why": ""}]}}
+    assert report_brief(old)["focus"] == ["p.4 式(2)"] and report_brief(None)["summary"] == ""
