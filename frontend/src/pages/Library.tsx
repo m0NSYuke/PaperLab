@@ -88,7 +88,7 @@ export function openOnTab(p: Paper, tab: string) {
   const key = `paperlab.reader.${p.paper_id}.${p.version}`;
   writeLocal(key, { ...readLocal(key, {}), tab });
 }
-export default function Library({ onOpen }: { onOpen: (p: Paper) => void }) {
+export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study") => void }) {
   const [papers, setPapers] = useState<Paper[]>([]),
     [study, setStudy] = useState<StudyOverview>({ papers: {}, ideas: [] }),
     [warnings, setWarnings] = useState<string[]>([]),
@@ -503,11 +503,10 @@ export default function Library({ onOpen }: { onOpen: (p: Paper) => void }) {
             ) : (
               <div className={list ? "papers-list" : "papers-grid"}>
                 {filtered.map((p) => (
-                  <button
-                    className="paper-card"
-                    key={p.paper_id + p.version}
-                    onClick={() => onOpen(p)}
-                  >
+                  // The card body opens the paper; the footer holds its own two actions,
+                  // so no button is nested inside another.
+                  <article className="paper-card" key={p.paper_id + p.version}>
+                    <button className="paper-card-body" onClick={() => onOpen(p)}>
                     <div className="card-top">
                       <span className="paper-kind">
                         <FileText size={13} />
@@ -542,16 +541,28 @@ export default function Library({ onOpen }: { onOpen: (p: Paper) => void }) {
                       )}
                     </div>
                     <StudyMeter paper={p} summary={summary(p)} />
+                    </button>
                     <div className="card-footer">
                       <span className={`analysis-badge ${p.analysis_status}`}>
                         <span />
                         {analysisLabel[p.analysis_status]}
                       </span>
-                      <span className="open-paper">
-                        进入精读 <ArrowUpRight size={15} />
-                      </span>
+                      <div className="card-actions">
+                        <button
+                          className="open-study"
+                          title="直接打开这篇论文的自测题、研究判断和想法：看看自己学到了什么"
+                          onClick={() => onOpen(p, "study")}
+                        >
+                          <Lightbulb size={14} />
+                          自测与思考
+                          {!!summary(p)?.ideas && <span>{summary(p)?.ideas}</span>}
+                        </button>
+                        <button className="open-paper" onClick={() => onOpen(p)}>
+                          进入精读 <ArrowUpRight size={15} />
+                        </button>
+                      </div>
                     </div>
-                  </button>
+                  </article>
                 ))}
               </div>
             )}

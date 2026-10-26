@@ -52,7 +52,7 @@ export default function App() {
       }
       routeRef.current = next;
       setRoute(next);
-      const m = location.hash.match(/^#\/paper\/([^/]+)\/(v\d+)$/);
+      const m = location.hash.match(/^#\/paper\/([^/?]+)\/(v\d+)(?:\?.*)?$/);
       if (m) {
         setRouteLoading(true);
         void api<Paper>(base(decodeURIComponent(m[1]), m[2]))
@@ -76,9 +76,10 @@ export default function App() {
     window.addEventListener("hashchange", route);
     return () => window.removeEventListener("hashchange", route);
   }, []);
-  const open = (p: Paper) => {
+  /** `focus: "study"` opens the paper straight at its self-test and reflections. */
+  const open = (p: Paper, focus?: "study") => {
     setPaper(p);
-    location.hash = `/paper/${encodeURIComponent(p.paper_id)}/${p.version}`;
+    location.hash = `/paper/${encodeURIComponent(p.paper_id)}/${p.version}${focus ? `?focus=${focus}` : ""}`;
   };
   const globalSource = useMemo<CommandSource>(
     () => ({
@@ -188,6 +189,7 @@ export default function App() {
             onDirtyChange={setDirty}
             key={paper.paper_id + paper.version}
             paper={paper}
+            initialFocus={params.get("focus") === "study" ? "study" : undefined}
             onBack={() => {
               location.hash = "/";
               setPaper(null);

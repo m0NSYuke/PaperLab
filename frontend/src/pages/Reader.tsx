@@ -59,10 +59,13 @@ export default function Reader({
   paper: initial,
   onBack,
   onDirtyChange,
+  initialFocus,
 }: {
   paper: Paper;
   onBack: () => void;
   onDirtyChange: (dirty: boolean) => void;
+  /** Open on the Study tab at the self-test, e.g. from the library card's 自测与思考. */
+  initialFocus?: "study";
 }) {
   const paperTone = usePaperTone();
   const [paper, setPaper] = useState(initial),
@@ -74,6 +77,7 @@ export default function Reader({
   const [state, setState] = useState<ReadingState>(() => ({
       ...DEFAULT,
       ...readLocal(key, DEFAULT),
+      ...(initialFocus === "study" ? { tab: "study" } : {}),
     })),
     [citation, setCitation] = useState<{
       value: Citation;
@@ -688,6 +692,7 @@ export default function Reader({
                 onTab={tabChange}
                 onCitation={jump}
                 selection={selection}
+                focusSelfTest={initialFocus === "study"}
               />
             }
             notes={

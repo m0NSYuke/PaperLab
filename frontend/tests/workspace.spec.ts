@@ -387,3 +387,20 @@ test("missing PDF, malformed report and disconnected backend show recoverable er
   await page.goto("/");
   await expect(page.getByRole("alert")).toContainText("无法连接本地后端");
 });
+
+test("library card 自测与思考 opens the paper straight at its self-test", async ({ page }) => {
+  const exceptions: string[] = [];
+  page.on("pageerror", (e) => exceptions.push(e.message));
+  await page.goto("/");
+  const card = page.locator(".paper-card").filter({ hasText: "Chunked Flow Policies" });
+  await card.getByRole("button", { name: /自测与思考/ }).click();
+  await expect.poll(() => page.url()).toContain(`#/paper/${demo.id}/${demo.version}?focus=study`);
+  const selfTest = page.locator("#study-self-test");
+  await expect(selfTest).toBeVisible();
+  await expect(selfTest.getByRole("heading", { name: "理解验收" })).toBeInViewport();
+  // The card body still opens the paper normally.
+  await page.goto("/");
+  await card.locator(".paper-card-body").click();
+  await expect.poll(() => page.url().endsWith(`#/paper/${demo.id}/${demo.version}`)).toBe(true);
+  expect(exceptions).toEqual([]);
+});

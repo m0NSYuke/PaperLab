@@ -114,6 +114,7 @@ export default function StudyPane({
   onTab,
   onCitation,
   selection,
+  focusSelfTest = false,
 }: {
   paper: Paper;
   report: Report | null;
@@ -121,8 +122,17 @@ export default function StudyPane({
   onTab: (tab: string) => void;
   onCitation: (c: Citation) => void;
   selection: string;
+  /** Scroll to the self-test once loaded (opened from the library's 自测与思考). */
+  focusSelfTest?: boolean;
 }) {
   const { study, loaded, save, error, update, reload } = useStudy(paper);
+  const selfTestRef = useRef<HTMLElement>(null),
+    focused = useRef(false);
+  useEffect(() => {
+    if (!focusSelfTest || !loaded || !report || focused.current) return;
+    focused.current = true;
+    requestAnimationFrame(() => selfTestRef.current?.scrollIntoView({ block: "start" }));
+  }, [focusSelfTest, loaded, report]);
   const guide = report?.reading_guide;
   const tests = report?.self_test || [];
   const togglePass = (n: 1 | 2 | 3) =>
@@ -250,7 +260,7 @@ export default function StudyPane({
         </div>
       </section>
 
-      <section className="study-block">
+      <section className="study-block" id="study-self-test" ref={selfTestRef}>
         <header>
           <h3>理解验收</h3>
           <span>

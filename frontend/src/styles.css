@@ -1109,6 +1109,65 @@ code {
 .paper-card:hover .open-paper {
   opacity: 1;
 }
+/* The card is an article: its body opens the paper, the footer carries two separate actions. */
+.paper-card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.paper-card-body:focus-visible,
+.card-actions button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+.card-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.card-actions button {
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+.open-paper {
+  padding: 4px 0 4px 8px;
+}
+.open-study {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  color: var(--text-2);
+  font-size: 13px;
+  transition: background 0.15s, color 0.15s;
+}
+.open-study:hover {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+.open-study span {
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--soft);
+  color: var(--muted);
+  font-size: 11px;
+  text-align: center;
+}
+#study-self-test {
+  scroll-margin-top: 12px;
+}
 .papers-list {
   display: grid;
   gap: 10px;
