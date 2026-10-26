@@ -11,3 +11,6 @@ Target for future human review: method/math 25, experimental completeness 20, pr
 - Read accepted human corrections before generation. Retain stable claim IDs, never remove notes/correction files, and require review when regenerated explanations disagree with accepted corrections.
 - If sources disagree, explain the discrepancy and set needs_review. If extraction fails, report parsing limits instead of manufacturing a full report.
 - Validate candidate with the publisher; inspect JSON, Markdown and key rendered pages. List actual checks and limits. No blanket 95% accuracy assertion based solely on a quote-match script.
+- Follow the reading chain (report-spec "Schema 1.3"): triage before the deep read, macro before micro, depth matched to the user's stated role. A deep report without deltas or an evidence audit is incomplete; a skim report padded with tutorial units is mis-scoped.
+- Consistency: the same quantity carries the same value, unit and protocol in triage, deltas, comparisons, experiments and claims. Re-read every summary-layer number on its PDF page before publishing; the publisher's traceability check proves presence, not correctness.
+- Cross-paper rows use only this paper's own tables or another library paper's published report and PDF; papers outside the library stay qualitative. Never place numbers from memory.

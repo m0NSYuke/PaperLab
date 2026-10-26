@@ -1,4 +1,9 @@
-import type {Report, ReportBlock} from "../../types";
+import type {Equation, Report, ReportBlock} from "../../types";
+
+/** Formula, explanation and symbols; the derivation is optional so readers can try it before revealing it. */
+export function equationBody(e: Equation, withDerivation = true) {
+  return ["$$\n"+e.latex+"\n$$",e.explanation,...e.symbols.map(s=>"$"+s.symbol+"$："+s.definition+(s.shape ? "（"+(/[\^_]/.test(s.shape) ? "$"+s.shape+"$" : s.shape)+"）":"")),...(withDerivation ? e.derivation : [])].join("\n\n");
+}
 
 export function reportBlocks(report: Report): ReportBlock[] {
   const sections = [
@@ -13,9 +18,19 @@ export function reportBlocks(report: Report): ReportBlock[] {
   }));
   blocks.push(...report.equations.map(e => ({
     id:e.equation_id,title:e.title,section:"mathematics",
-    body:["$$\n"+e.latex+"\n$$",e.explanation,...e.symbols.map(s=>"$"+s.symbol+"$："+s.definition+(s.shape ? "（"+(/[\^_]/.test(s.shape) ? "$"+s.shape+"$" : s.shape)+"）":"")),...e.derivation].join("\n\n"),
+    body:equationBody(e),
     citations:e.citations,
   })));
+  const t=report.triage;
+  if (t) blocks.push({id:"triage",title:"分诊卡",section:"overview",citations:[],
+    body:[t.user_context,t.role,t.problem,t.core_change,t.headline_result,t.cost,t.credibility,t.rationale,...t.focus].filter(Boolean).join("\n\n")});
+  blocks.push(...(report.deltas||[]).map(d=>({id:"delta-"+d.delta_id,title:"改进点："+d.component,section:"overview",
+    body:"前作做法："+d.prior+"\n\n本文改动："+d.change+"\n\n证据："+d.evidence,citations:d.citations})));
+  blocks.push(...(report.comparisons||[]).map((c,i)=>({id:"comparison-"+i,title:"横向对比："+c.title,section:"overview",
+    body:c.rows.map(r=>r.label+"："+r.cells.map((v,j)=>c.dimensions[j]+" "+v).join("；")).join("\n\n")+(c.note ? "\n\n"+c.note : ""),
+    citations:c.rows.flatMap(r=>r.citations)})));
+  blocks.push(...(report.evidence_audit||[]).map(c=>({id:"audit-"+c.check_id,title:"实验审计："+c.assertion,section:"experiments",
+    body:"支撑实验："+(c.experiments.join("；")||"无")+"\n\n对比是否公平："+(c.fairness||"—")+"\n\n缺失的实验："+(c.gaps||"—"),citations:[]})));
   blocks.push(...report.experiments.map((e,i)=>({
     id:"experiment-"+i,title:e.name,section:"experiments",
     body:"数据与设置："+e.dataset+"\n\n比较对象："+e.baselines.join("、")+"\n\n指标："+e.metric+"\n\n结果："+e.value+"\n\n协议："+e.protocol,

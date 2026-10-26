@@ -1,6 +1,6 @@
 # Report specification
 
-Canonical schema: `docs/schemas/report.schema.json`, implemented by `backend/app/models.py`. Schema version is `1.0`; JSON is the browser source, Markdown is deterministically rendered from JSON.
+Canonical schema: `docs/schemas/report.schema.json`, implemented by `backend/app/models.py`. New reports use schema version `1.3` (see the last section); 1.0–1.2 reports stay valid. JSON is the browser source, Markdown is deterministically rendered from JSON in reading-chain order: triage → overview / motivation / contributions → deltas → comparisons → tutorial → method / training / inference → mathematics and equations → experiments → evidence audit → limitations → relations and evidence.
 
 Required sections: overview, motivation, contributions, method, mathematics, training, inference, structured experiments, limitations, related_papers, claims, equations, concept_links, quality_checks. Use the actual paper_id and pinned version. `analysis_status` is ready, needs_review or failed. The publisher supplies revision and generation timestamp.
 
@@ -60,3 +60,47 @@ tutorial = {introduction, prerequisites: [TeachingUnit], walkthrough: [TeachingU
 The report should be independently understandable: intuition -> mechanism -> example -> evidence -> limits. Dense bullet lists of claims alone are insufficient. All important factual assertions still belong in source-backed claims; tutorial citations receive the same exact-PDF-page validation as equations and self-tests. Use tutorial=null with a source limitation when teaching cannot be supported rather than fabricating it. Respect the user's explicit GPT/Codex author assignment.
 
 The reader's saved questions live independently in questions.jsonl, with their source text and report revision. Never overwrite or re-interpret those snapshots when publishing a new report.
+
+## Schema 1.3: the reading chain
+
+New reports use `schema_version: "1.3"`. The publisher rejects a 1.3 report that breaks any rule marked **(enforced)**.
+
+### Reading depth
+
+`triage.depth` is `deep` (精读), `selective` (选读) or `skim` (略读). A depth word from the user wins (`depth_source: user`); otherwise recommend one (`depth_source: recommended`) and say why in `rationale`. The reader's own verdict stays in study.json; the triage is a recommendation.
+
+- deep: the paper is the user's baseline, base model or benchmark to beat; its method may be reused directly; or its results contradict common expectations. Full chain: tutorial, every equation, deltas **(enforced: at least one)**, evidence_audit **(enforced when experiments exist)**.
+- selective: only some parts matter to the user (for example only the verification rule). `triage.focus` names those parts **(enforced: non-empty)**; give them deep treatment and keep the rest concise.
+- skim: background, surveys, distant methods. Triage plus concise required sections; tutorial may be null; equations only when the core change needs them. Claims and citations keep the same rules.
+
+### triage (required in 1.3, enforced)
+
+`{depth, depth_source, user_context, role, paper_type, problem, core_change, headline_result, cost, credibility, rationale, focus[], claim_ids[]}`.
+- `user_context` is the user's own sentence, verbatim; `role` restates it (对标论文, 基座, 方法来源, 背景, 对比基线). Both stay empty when the user gave none.
+- `paper_type`: method, system, benchmark, survey, technical_report, analysis or other.
+- `headline_result` states the main number with its protocol (dataset, hardware, baseline). `cost` covers training, compute, quality loss or extra components. `credibility` is a short first judgment (single benchmark, missing ablation, matched baselines).
+- `claim_ids` lists the claims that carry the triage **(enforced: at least one, all must exist)**.
+
+### deltas: what changed against prior work
+
+`{delta_id, component, prior, change, evidence, load_bearing, claim_ids[], citations[]}`. One row per distinctive component. `prior` names the predecessor and its practice; `evidence` names the ablation or controlled comparison. `load_bearing` is yes / partial / no only with a referenced claim or verified citation **(enforced)**; otherwise `untested`. Inherited components belong here too, marked as inherited in `change`, so the reader sees what is actually new.
+
+### evidence_audit: claim → experiment
+
+`{check_id, assertion, claim_ids[], experiments[], strength, fairness, gaps}`. `claim_ids` and `experiments` must exist in this report **(enforced)**; strength strong / moderate needs at least one experiment **(enforced)**. `fairness` checks data, steps, hardware and tuning budget across compared methods; `gaps` names the missing experiment that would settle the claim.
+
+### Equation priority
+
+Every 1.3 equation has `priority` **(enforced)**: `derive` (new and load-bearing: the reader works it out, then reveals the derivation), `understand` (inherited or standard: know what it means), `skip` (implementation detail). Write the derivation completely for derive and understand equations; the reader shows it collapsed.
+
+### Cross-paper comparison
+
+`comparisons: [{title, dimensions[], rows[{label, source, paper_id, version, cells[], citations[]}], note}]`, at least two rows, one cell per dimension **(enforced)**.
+- `this_paper`: values printed in this paper's PDF, including its own baseline tables. Cite them with verified quotes from this paper.
+- `local_report`: values from another library paper with a published report. `paper_id` and `version` are required **(enforced)**; citations may quote that paper's PDF and are verified against its pages **(enforced)**.
+- `unverified`: a paper outside the library. Qualitative cells only, no digits **(enforced)**. Never fill numbers from memory.
+- Compare only like with like. When benchmarks, step counts or hardware differ, say so in `note` or in the cell.
+
+### Number traceability (enforced)
+
+Every number with a decimal point or at least two digits in triage, deltas, evidence_audit and comparison cells must appear in this report's claims, experiment records or verified quotes; a `local_report` row's numbers must appear in that paper's published report or the row's verified quotes. arXiv IDs and calendar years are exempt. When the publisher names an untraceable number, add the supporting claim with its verified quote or correct the number; never delete the evidence to pass.

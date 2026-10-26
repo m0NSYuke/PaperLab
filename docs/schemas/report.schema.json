@@ -141,6 +141,180 @@
       "title": "Claim",
       "type": "object"
     },
+    "Comparison": {
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "dimensions": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Dimensions",
+          "type": "array"
+        },
+        "rows": {
+          "items": {
+            "$ref": "#/$defs/ComparisonRow"
+          },
+          "minItems": 2,
+          "title": "Rows",
+          "type": "array"
+        },
+        "note": {
+          "default": "",
+          "title": "Note",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "dimensions",
+        "rows"
+      ],
+      "title": "Comparison",
+      "type": "object"
+    },
+    "ComparisonRow": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "this_paper",
+            "local_report",
+            "unverified"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "paper_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Paper Id"
+        },
+        "version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Version"
+        },
+        "cells": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Cells",
+          "type": "array"
+        },
+        "citations": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Citation"
+          },
+          "title": "Citations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "label",
+        "source",
+        "cells"
+      ],
+      "title": "ComparisonRow",
+      "type": "object"
+    },
+    "Delta": {
+      "additionalProperties": false,
+      "description": "One component: how prior work does it, what this paper changes, and whether the change carries the result.",
+      "properties": {
+        "delta_id": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Delta Id",
+          "type": "string"
+        },
+        "component": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Component",
+          "type": "string"
+        },
+        "prior": {
+          "minLength": 1,
+          "title": "Prior",
+          "type": "string"
+        },
+        "change": {
+          "minLength": 1,
+          "title": "Change",
+          "type": "string"
+        },
+        "evidence": {
+          "minLength": 1,
+          "title": "Evidence",
+          "type": "string"
+        },
+        "load_bearing": {
+          "enum": [
+            "yes",
+            "partial",
+            "no",
+            "untested"
+          ],
+          "title": "Load Bearing",
+          "type": "string"
+        },
+        "claim_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Claim Ids",
+          "type": "array"
+        },
+        "citations": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Citation"
+          },
+          "title": "Citations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "delta_id",
+        "component",
+        "prior",
+        "change",
+        "evidence",
+        "load_bearing"
+      ],
+      "title": "Delta",
+      "type": "object"
+    },
     "Equation": {
       "additionalProperties": false,
       "properties": {
@@ -189,6 +363,23 @@
           },
           "title": "Citations",
           "type": "array"
+        },
+        "priority": {
+          "anyOf": [
+            {
+              "enum": [
+                "derive",
+                "understand",
+                "skip"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Priority"
         }
       },
       "required": [
@@ -201,6 +392,67 @@
         "citations"
       ],
       "title": "Equation",
+      "type": "object"
+    },
+    "EvidenceCheck": {
+      "additionalProperties": false,
+      "description": "Claim -> experiment audit: which experiments carry a claim, how strongly, and what is missing.",
+      "properties": {
+        "check_id": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Check Id",
+          "type": "string"
+        },
+        "assertion": {
+          "minLength": 1,
+          "title": "Assertion",
+          "type": "string"
+        },
+        "claim_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Claim Ids",
+          "type": "array"
+        },
+        "experiments": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Experiments",
+          "type": "array"
+        },
+        "strength": {
+          "enum": [
+            "strong",
+            "moderate",
+            "weak",
+            "none"
+          ],
+          "title": "Strength",
+          "type": "string"
+        },
+        "fairness": {
+          "default": "",
+          "title": "Fairness",
+          "type": "string"
+        },
+        "gaps": {
+          "default": "",
+          "title": "Gaps",
+          "type": "string"
+        }
+      },
+      "required": [
+        "check_id",
+        "assertion",
+        "claim_ids",
+        "strength"
+      ],
+      "title": "EvidenceCheck",
       "type": "object"
     },
     "Experiment": {
@@ -474,6 +726,114 @@
       "title": "TeachingUnit",
       "type": "object"
     },
+    "Triage": {
+      "additionalProperties": false,
+      "description": "First-pass verdict written before the deep read. A recommendation; the reader's own judgment lives in study.json.",
+      "properties": {
+        "depth": {
+          "enum": [
+            "deep",
+            "selective",
+            "skim"
+          ],
+          "title": "Depth",
+          "type": "string"
+        },
+        "depth_source": {
+          "default": "recommended",
+          "enum": [
+            "user",
+            "recommended"
+          ],
+          "title": "Depth Source",
+          "type": "string"
+        },
+        "user_context": {
+          "default": "",
+          "maxLength": 2000,
+          "title": "User Context",
+          "type": "string"
+        },
+        "role": {
+          "default": "",
+          "maxLength": 500,
+          "title": "Role",
+          "type": "string"
+        },
+        "paper_type": {
+          "enum": [
+            "method",
+            "system",
+            "benchmark",
+            "survey",
+            "technical_report",
+            "analysis",
+            "other"
+          ],
+          "title": "Paper Type",
+          "type": "string"
+        },
+        "problem": {
+          "minLength": 1,
+          "title": "Problem",
+          "type": "string"
+        },
+        "core_change": {
+          "minLength": 1,
+          "title": "Core Change",
+          "type": "string"
+        },
+        "headline_result": {
+          "minLength": 1,
+          "title": "Headline Result",
+          "type": "string"
+        },
+        "cost": {
+          "minLength": 1,
+          "title": "Cost",
+          "type": "string"
+        },
+        "credibility": {
+          "minLength": 1,
+          "title": "Credibility",
+          "type": "string"
+        },
+        "rationale": {
+          "minLength": 1,
+          "title": "Rationale",
+          "type": "string"
+        },
+        "focus": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Focus",
+          "type": "array"
+        },
+        "claim_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Claim Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "depth",
+        "paper_type",
+        "problem",
+        "core_change",
+        "headline_result",
+        "cost",
+        "credibility",
+        "rationale",
+        "claim_ids"
+      ],
+      "title": "Triage",
+      "type": "object"
+    },
     "Tutorial": {
       "additionalProperties": false,
       "properties": {
@@ -557,7 +917,8 @@
       "enum": [
         "1.0",
         "1.1",
-        "1.2"
+        "1.2",
+        "1.3"
       ],
       "title": "Schema Version",
       "type": "string"
@@ -693,6 +1054,41 @@
         }
       ],
       "default": null
+    },
+    "triage": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Triage"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "deltas": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Delta"
+      },
+      "title": "Deltas",
+      "type": "array"
+    },
+    "evidence_audit": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/EvidenceCheck"
+      },
+      "title": "Evidence Audit",
+      "type": "array"
+    },
+    "comparisons": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Comparison"
+      },
+      "title": "Comparisons",
+      "type": "array"
     }
   },
   "required": [

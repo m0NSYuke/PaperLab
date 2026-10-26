@@ -80,6 +80,8 @@ class Equation(Model):
     derivation: list[str]
     derivation_type: Literal["paper", "auxiliary_explanation"] = "auxiliary_explanation"
     citations: list[Citation]
+    # 1.3: derive = new and load-bearing, work it out yourself; understand = inherited/standard; skip = implementation detail.
+    priority: Literal["derive", "understand", "skip"] | None = None
 
 
 class Experiment(Model):
@@ -142,9 +144,68 @@ class Tutorial(Model):
     faq: list[TutorialFAQ] = []
 
 
+class Triage(Model):
+    """First-pass verdict written before the deep read. A recommendation; the reader's own judgment lives in study.json."""
+    depth: Literal["deep", "selective", "skim"]
+    depth_source: Literal["user", "recommended"] = "recommended"
+    user_context: str = Field(default="", max_length=2000)
+    role: str = Field(default="", max_length=500)
+    paper_type: Literal["method", "system", "benchmark", "survey", "technical_report", "analysis", "other"]
+    problem: str = Field(min_length=1)
+    core_change: str = Field(min_length=1)
+    headline_result: str = Field(min_length=1)
+    cost: str = Field(min_length=1)
+    credibility: str = Field(min_length=1)
+    rationale: str = Field(min_length=1)
+    focus: list[str] = []
+    claim_ids: list[str] = Field(min_length=1)
+
+
+class Delta(Model):
+    """One component: how prior work does it, what this paper changes, and whether the change carries the result."""
+    delta_id: str = Field(min_length=1, max_length=100)
+    component: str = Field(min_length=1, max_length=300)
+    prior: str = Field(min_length=1)
+    change: str = Field(min_length=1)
+    evidence: str = Field(min_length=1)
+    load_bearing: Literal["yes", "partial", "no", "untested"]
+    claim_ids: list[str] = []
+    citations: list[Citation] = []
+
+
+class EvidenceCheck(Model):
+    """Claim -> experiment audit: which experiments carry a claim, how strongly, and what is missing."""
+    check_id: str = Field(min_length=1, max_length=100)
+    assertion: str = Field(min_length=1)
+    claim_ids: list[str] = Field(min_length=1)
+    experiments: list[str] = []
+    strength: Literal["strong", "moderate", "weak", "none"]
+    fairness: str = ""
+    gaps: str = ""
+
+
+class ComparisonRow(Model):
+    label: str = Field(min_length=1, max_length=300)
+    # this_paper: values read from this paper's own PDF (including its baseline tables);
+    # local_report: values from another library paper's published report; unverified: qualitative only, no numbers.
+    source: Literal["this_paper", "local_report", "unverified"]
+    paper_id: str | None = None
+    version: str | None = None
+    cells: list[str]
+    citations: list[Citation] = []
+
+
+class Comparison(Model):
+    title: str = Field(min_length=1, max_length=300)
+    dimensions: list[str] = Field(min_length=1)
+    rows: list[ComparisonRow] = Field(min_length=2)
+    note: str = ""
+
+
 class Report(Model):
-    # 1.1 adds optional reading_guide / self_test; 1.0 reports stay valid unchanged.
-    schema_version: Literal["1.0", "1.1", "1.2"] = "1.1"
+    # 1.1 adds optional reading_guide / self_test; 1.3 adds triage / deltas / evidence_audit / comparisons.
+    # Older reports stay valid unchanged.
+    schema_version: Literal["1.0", "1.1", "1.2", "1.3"] = "1.1"
     paper_id: str
     version: str
     generated_at: str = Field(default_factory=now)
@@ -167,6 +228,10 @@ class Report(Model):
     reading_guide: ReadingGuide | None = None
     self_test: list[SelfTestItem] = []
     tutorial: Tutorial | None = None
+    triage: Triage | None = None
+    deltas: list[Delta] = []
+    evidence_audit: list[EvidenceCheck] = []
+    comparisons: list[Comparison] = []
 
     @model_validator(mode="after")
     def unique_ids(self):
@@ -180,7 +245,53 @@ class Report(Model):
             ids = [u.unit_id for group in (self.tutorial.prerequisites, self.tutorial.walkthrough, self.tutorial.worked_examples) for u in group]
             if len(ids) != len(set(ids)):
                 raise ValueError("Duplicate teaching unit IDs")
+        for label, ids in [("delta", [d.delta_id for d in self.deltas]),
+                           ("evidence check", [c.check_id for c in self.evidence_audit])]:
+            if len(ids) != len(set(ids)):
+                raise ValueError(f"Duplicate {label} IDs")
+        if self.schema_version == "1.3":
+            self.check_reading_chain()
         return self
+
+    def check_reading_chain(self):
+        """1.3 structure: every summary-layer statement points at claims/experiments that exist in this report."""
+        if not self.triage:
+            raise ValueError("Schema 1.3 report requires triage")
+        claims = {c.claim_id for c in self.claims}
+        experiments = {e.name for e in self.experiments}
+        refs = [("triage", self.triage.claim_ids)] + [(f"delta {d.delta_id}", d.claim_ids) for d in self.deltas] \
+            + [(f"evidence check {c.check_id}", c.claim_ids) for c in self.evidence_audit]
+        for owner, ids in refs:
+            unknown = [i for i in ids if i not in claims]
+            if unknown:
+                raise ValueError(f"{owner} references unknown claim IDs: {', '.join(unknown)}")
+        for eq in self.equations:
+            if eq.priority is None:
+                raise ValueError(f"Schema 1.3 equation {eq.equation_id} requires priority (derive/understand/skip)")
+        for d in self.deltas:
+            if d.load_bearing != "untested" and not d.claim_ids and not any(c.verification == "verified" for c in d.citations):
+                raise ValueError(f"delta {d.delta_id} judges load_bearing={d.load_bearing} without a claim or verified citation")
+        for c in self.evidence_audit:
+            unknown = [e for e in c.experiments if e not in experiments]
+            if unknown:
+                raise ValueError(f"evidence check {c.check_id} references unknown experiments: {', '.join(unknown)}")
+            if c.strength in ("strong", "moderate") and not c.experiments:
+                raise ValueError(f"evidence check {c.check_id} rates strength={c.strength} without any experiment")
+        for table in self.comparisons:
+            for row in table.rows:
+                if len(row.cells) != len(table.dimensions):
+                    raise ValueError(f"comparison '{table.title}' row '{row.label}' has {len(row.cells)} cells for {len(table.dimensions)} dimensions")
+                if row.source == "local_report" and not (row.paper_id and row.version):
+                    raise ValueError(f"comparison row '{row.label}' from a local report needs paper_id and version")
+                if row.source == "unverified" and any(ch.isdigit() for cell in row.cells for ch in cell):
+                    raise ValueError(f"comparison row '{row.label}' is unverified and must not contain numbers")
+        if self.triage.depth == "deep":
+            if not self.deltas:
+                raise ValueError("Deep-read report requires deltas")
+            if self.experiments and not self.evidence_audit:
+                raise ValueError("Deep-read report with experiments requires evidence_audit")
+        if self.triage.depth == "selective" and not self.triage.focus:
+            raise ValueError("Selective-read report requires triage.focus")
 
 
 class CorrectionInput(Model):

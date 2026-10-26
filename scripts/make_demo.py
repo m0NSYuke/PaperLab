@@ -92,7 +92,42 @@ def build_report(meta: Metadata) -> dict:
         "claim_id": cid, "section": section, "claim_type": kind, "text": text, "citations": cites,
         "evidence_status": "supported" if cites else "missing"}
     return {
-        "paper_id": meta.paper_id, "version": meta.version, "analysis_status": "ready",
+        "schema_version": "1.3", "paper_id": meta.paper_id, "version": meta.version, "analysis_status": "ready",
+        "triage": {
+            "depth": "deep", "depth_source": "recommended", "paper_type": "method",
+            "problem": "模仿学习策略逐步预测动作时，小误差会在长时程里累积。",
+            "core_change": "把单步动作预测换成用流匹配一次生成 $H$ 步动作块，只执行前一半后重新规划。",
+            "headline_result": "$H=8$ 时三任务平均成功率 0.82，单步基线 0.61（每种配置 50 次试验）。",
+            "cost": "推理要做 10 步欧拉积分；动作块过长（$H=32$）时成功率降到 0.70。",
+            "credibility": "偏低：玩具仿真、理想状态估计，每种配置只有一个随机种子。",
+            "rationale": "演示文档：方法短、公式只有一条，适合完整走一遍阅读链条。",
+            "claim_ids": ["demo_chunk", "demo_euler", "demo_best", "demo_long", "demo_seed"]},
+        "deltas": [
+            {"delta_id": "d_chunk", "component": "输出形式", "prior": "单步策略：每次观测只预测一个动作（本文的对照基线）",
+             "change": "一次输出 $H$ 步动作块", "evidence": "动作块长度消融：$H=8$ 为 0.82，单步基线为 0.61",
+             "load_bearing": "yes", "claim_ids": ["demo_best"]},
+            {"delta_id": "d_replan", "component": "执行方式", "prior": "原文没有给出对照做法",
+             "change": "每个动作块只执行前一半，然后重新规划", "evidence": "没有「执行完整动作块」的消融",
+             "load_bearing": "untested", "claim_ids": ["demo_replan"]},
+            {"delta_id": "d_flow", "component": "生成模型", "prior": "Diffusion Policy 一类方法用扩散模型生成动作序列（外部背景）",
+             "change": "改用流匹配，推理时 10 步欧拉积分", "evidence": "没有与扩散模型的对照实验",
+             "load_bearing": "untested", "claim_ids": ["demo_euler"]}],
+        "evidence_audit": [
+            {"check_id": "a_chunk", "assertion": "预测动作块能减少误差累积、提高成功率", "claim_ids": ["demo_best"],
+             "experiments": ["动作块长度消融"], "strength": "weak",
+             "fairness": "单步基线与动作块策略在同一仿真器、同样 50 次试验下比较；原文没有说明两者训练预算是否一致。",
+             "gaps": "多个随机种子、真实机器人，以及「执行完整动作块」与「执行一半」的对照。"},
+            {"check_id": "a_long", "assertion": "动作块过长会因反应太慢而变差", "claim_ids": ["demo_long", "demo_seed"],
+             "experiments": ["动作块长度消融"], "strength": "weak", "fairness": "与其他配置同一协议。",
+             "gaps": "原文没有测量对扰动的反应延迟，「反应太慢」是作者给出的解释。"}],
+        "comparisons": [
+            {"title": "动作块长度与单步基线", "dimensions": ["三任务平均成功率", "说明"],
+             "rows": [
+                 {"label": "单步策略", "source": "this_paper", "cells": ["0.61", "每次观测只预测一个动作"], "citations": [best]},
+                 {"label": "动作块 $H=8$", "source": "this_paper", "cells": ["0.82", "本文最佳配置"], "citations": [best]},
+                 {"label": "动作块 $H=32$", "source": "this_paper", "cells": ["0.70", "动作块过长，反应变慢"], "citations": [longer]},
+                 {"label": "Diffusion Policy", "source": "unverified", "cells": ["本文没有比较", "用扩散模型生成动作序列"]}],
+             "note": "前三行来自本文同一协议（每种配置 50 次试验、单一随机种子）；最后一行只作定性定位，没有可比数字。"}],
         "overview": "**一句话：让策略一次预测一小段未来动作（动作块），而不是每步只出一个动作。** 这是一篇为演示 PaperLab 而写的玩具论文，"
                     "用来展示报告、出处跳转、划词翻译和学习记录如何配合。",
         "motivation": "模仿学习的策略每一步的小误差会在长时程里累积。一次规划多步动作，可以让动作更平滑，也不那么容易被单帧观测的噪声带偏。",
@@ -116,6 +151,7 @@ def build_report(meta: Metadata) -> dict:
             claim("demo_euler", "method", "推理时用 10 步欧拉积分生成动作块。", [euler]),
             claim("demo_replan", "method", "每个动作块只执行前一半，然后重新规划。", [replan]),
             claim("demo_best", "experiments", "$H=8$ 时三任务平均成功率 0.82，高于单步基线的 0.61。", [best]),
+            claim("demo_long", "experiments", "$H=32$ 时成功率降到 0.70，作者解释为对扰动反应太慢。", [longer]),
             claim("demo_seed", "experiments", "每种配置只用一个随机种子，差异仅作示意。", [seed]),
         ],
         "equations": [
@@ -126,7 +162,7 @@ def build_report(meta: Metadata) -> dict:
              "explanation": "$\\tau=0$ 是纯噪声，$\\tau=1$ 是真实动作块；网络学习沿这条直线移动的速度。",
              "derivation": ["对 $\\tau$ 求导得到速度 $\\frac{dA^{\\tau}}{d\\tau}=A_t-\\epsilon$。",
                             "这就是训练时网络要回归的目标。"],
-             "derivation_type": "auxiliary_explanation", "citations": [loss]}],
+             "derivation_type": "auxiliary_explanation", "citations": [loss], "priority": "derive"}],
         "concept_links": ["flow-matching"],
         "quality_checks": ["演示文档：PDF 与报告均由 scripts/make_demo.py 生成，不代表任何真实研究。",
                            "所有 verified 引句都通过了发布器的页文本校验。"],

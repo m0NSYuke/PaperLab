@@ -43,6 +43,54 @@ export type Equation = {
   derivation: string[];
   derivation_type: string;
   citations: Citation[];
+  priority?: "derive" | "understand" | "skip" | null;
+};
+export type Triage = {
+  depth: "deep" | "selective" | "skim";
+  depth_source: "user" | "recommended";
+  user_context: string;
+  role: string;
+  paper_type: string;
+  problem: string;
+  core_change: string;
+  headline_result: string;
+  cost: string;
+  credibility: string;
+  rationale: string;
+  focus: string[];
+  claim_ids: string[];
+};
+export type Delta = {
+  delta_id: string;
+  component: string;
+  prior: string;
+  change: string;
+  evidence: string;
+  load_bearing: "yes" | "partial" | "no" | "untested";
+  claim_ids: string[];
+  citations: Citation[];
+};
+export type EvidenceCheck = {
+  check_id: string;
+  assertion: string;
+  claim_ids: string[];
+  experiments: string[];
+  strength: "strong" | "moderate" | "weak" | "none";
+  fairness: string;
+  gaps: string;
+};
+export type Comparison = {
+  title: string;
+  dimensions: string[];
+  rows: {
+    label: string;
+    source: "this_paper" | "local_report" | "unverified";
+    paper_id: string | null;
+    version: string | null;
+    cells: string[];
+    citations: Citation[];
+  }[];
+  note: string;
 };
 export type Report = {
   schema_version: string;
@@ -89,6 +137,10 @@ export type Report = {
     worked_examples: TeachingUnit[];
     faq: {question: string; answer: string; citations: Citation[]}[];
   } | null;
+  triage?: Triage | null;
+  deltas?: Delta[];
+  evidence_audit?: EvidenceCheck[];
+  comparisons?: Comparison[];
 };
 export type TeachingUnit = {unit_id: string; title: string; body: string; citations: Citation[]};
 export type ReportBlock = {id: string; title: string; section: string; body: string; citations: Citation[]};

@@ -16,6 +16,7 @@ import type { Citation, Claim, Correction, Paper, Report } from "../../types";
 import type { ReportBlock } from "../../types";
 import GuidedReport from "./GuidedReport";
 import ReportToc from "./ReportToc";
+import {ComparisonTables, DeltaTable, Derivation, EvidenceAudit, PriorityBadge, TriageCard} from "./ReadingChain";
 import {reportBlocks} from "./reading";
 export const TABS = [
   ["overview", "Overview", "概览"],
@@ -282,11 +283,20 @@ export default function ReportPane({
               <>
                 <div className="section-eyebrow">01 / PAPER SNAPSHOT</div>
                 <h2 className="section-title">先理解问题，再深入方法</h2>
+                {report.triage && <TriageCard triage={report.triage} />}
                 <Markdown>{report.overview}</Markdown>
                 <h3 className="report-subheading">研究动机</h3>
                 <Markdown>{report.motivation}</Markdown>
                 <h3 className="report-subheading">核心贡献</h3>
                 <Markdown>{report.contributions}</Markdown>
+                {!!report.deltas?.length && <>
+                  <h3 className="report-subheading">改进点对照</h3>
+                  <DeltaTable deltas={report.deltas} onCitation={onCitation} />
+                </>}
+                {!!report.comparisons?.length && <>
+                  <h3 className="report-subheading">横向对比</h3>
+                  <ComparisonTables comparisons={report.comparisons} onCitation={onCitation} />
+                </>}
                 <h3 className="report-subheading">局限与阅读建议</h3>
                 <Markdown>{report.limitations}</Markdown>
               </>
@@ -328,7 +338,7 @@ export default function ReportPane({
                         标记问题
                       </button>
                     </div>
-                    <h3>{eq.title}</h3>
+                    <h3>{eq.title} <PriorityBadge equation={eq} /></h3>
                     <button className="text-button" onClick={()=>onAsk({id:eq.equation_id,title:eq.title,section:"mathematics",body:"$$\n"+eq.latex+"\n$$\n\n"+eq.explanation+"\n\n"+eq.symbols.map(s=>s.symbol+"："+s.definition).join("\n")+"\n\n"+eq.derivation.join("\n"),citations:eq.citations})}>这条公式没懂，追问细节</button>
                     <Markdown>{`$$\n${eq.latex}\n$$`}</Markdown>
                     <Markdown>{eq.explanation}</Markdown>
@@ -354,23 +364,7 @@ export default function ReportPane({
                         </tbody>
                       </table>
                     </div>
-                    <details open>
-                      <summary>
-                        逐步推导{" "}
-                        <span>
-                          {eq.derivation_type === "paper"
-                            ? "原文推导"
-                            : "辅助解释 · 非论文逐字内容"}
-                        </span>
-                      </summary>
-                      <ol className="derivation">
-                        {eq.derivation.map((s, i) => (
-                          <li key={i}>
-                            <Markdown>{s}</Markdown>
-                          </li>
-                        ))}
-                      </ol>
-                    </details>
+                    <Derivation equation={eq} />
                     <Citations items={eq.citations} onCitation={onCitation} />
                     {latest.get(eq.equation_id) && (
                       <div className="human-correction">
@@ -395,6 +389,10 @@ export default function ReportPane({
                 <p className="section-intro">
                   保留原始数值和评测协议。图中的柱高不当作精确数字；未披露的信息明确保留缺失。
                 </p>
+                {!!report.evidence_audit?.length && <>
+                  <h3 className="report-subheading">实验审计：主张由哪些实验支撑</h3>
+                  <EvidenceAudit items={report.evidence_audit} />
+                </>}
                 {report.experiments.map((exp, i) => (
                   <article className="experiment-card" key={i}>
                     <div className="experiment-number">
