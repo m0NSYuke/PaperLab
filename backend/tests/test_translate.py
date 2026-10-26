@@ -93,3 +93,9 @@ def test_orphan_cleanup_only_targets_llama_server():
     finally:
         bystander.kill()
     assert 1024 < translate.free_port() < 65536
+
+
+def test_stale_model_pid_of_a_gone_process_is_ignored():
+    # After an unclean stop the recorded pid no longer exists; on Chinese Windows tasklist then
+    # answers in GBK, which used to crash the next translation with a 500.
+    translate.kill_if_llama(2**22 - 3)

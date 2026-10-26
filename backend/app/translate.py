@@ -161,9 +161,11 @@ def kill_if_llama(pid: int):
     """Terminate a recorded model process only if it is still a llama-server."""
     try:
         if os.name == "nt":
+            # Bytes, not text: when no process matches, tasklist prints a localized message in the
+            # console code page (GBK on Chinese Windows), which is not valid UTF-8 under `-X utf8`.
             out = subprocess.run(["tasklist", "/FI", f"PID eq {pid}", "/FO", "CSV", "/NH"], capture_output=True,
-                                 text=True, timeout=10, creationflags=subprocess.CREATE_NO_WINDOW).stdout
-            if "llama-server" in out.lower():
+                                 timeout=10, creationflags=subprocess.CREATE_NO_WINDOW).stdout
+            if b"llama-server" in out.lower():
                 subprocess.run(["taskkill", "/PID", str(pid), "/F"], capture_output=True, timeout=10,
                                creationflags=subprocess.CREATE_NO_WINDOW)
         elif "llama-server" in Path(f"/proc/{pid}/cmdline").read_bytes().decode(errors="replace"):
