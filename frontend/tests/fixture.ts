@@ -27,7 +27,8 @@ export const python = resolve("../backend/.venv/Scripts/python.exe");
 export async function openTab(page: Page, label: string) {
   const tab = page
     .getByRole("navigation", { name: "报告章节" })
-    .getByRole("button", { name: label, exact: true });
+    // Tabs carry their step number ("2精读"), so match the label at the end.
+    .getByRole("button", { name: new RegExp(`${label}$`) });
   if (await tab.isVisible()) await tab.click();
   else {
     await page.getByRole("button", { name: "更多章节" }).click();

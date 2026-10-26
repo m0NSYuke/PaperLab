@@ -230,15 +230,9 @@ export default function StudyPane({
           >
             <p>读方法与实验，不纠缠推导细节。遇到看不懂的公式先记下来。</p>
             <div className="tab-links">
-              {[
-                ["method", "Method"],
-                ["mathematics", "Mathematics"],
-                ["experiments", "Experiments"],
-              ].map(([key, label]) => (
-                <button key={key} onClick={() => onTab(key)}>
-                  {label} <ArrowUpRight size={12} />
-                </button>
-              ))}
+              <button onClick={() => onTab("read")}>
+                去精读 <ArrowUpRight size={12} />
+              </button>
             </div>
           </PassCard>
           <PassCard

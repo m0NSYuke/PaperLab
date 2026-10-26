@@ -34,7 +34,7 @@ import type {
 } from "../types";
 import PdfPane from "../features/reader/PdfPane";
 import CodexWorkbench from "../features/reader/CodexWorkbench";
-import ReportPane, { TABS } from "../features/report/ReportPane";
+import ReportPane, { TABS, normalizeTab } from "../features/report/ReportPane";
 import Notes from "../features/notes/Notes";
 import StudyPane from "../features/study/StudyPane";
 import { useCommands, type CommandSource } from "../components/CommandPalette";
@@ -53,7 +53,7 @@ const DEFAULT: ReadingState = {
   page: 1,
   scale: "content-width",
   split: 57,
-  tab: "guide",
+  tab: "skim",
 };
 export default function Reader({
   paper: initial,
@@ -74,11 +74,10 @@ export default function Reader({
     [error, setError] = useState(""),
     [corrections, setCorrections] = useState<Correction[]>([]);
   const key = `paperlab.reader.${paper.paper_id}.${paper.version}`;
-  const [state, setState] = useState<ReadingState>(() => ({
-      ...DEFAULT,
-      ...readLocal(key, DEFAULT),
-      ...(initialFocus === "study" ? { tab: "study" } : {}),
-    })),
+  const [state, setState] = useState<ReadingState>(() => {
+      const saved = { ...DEFAULT, ...readLocal(key, DEFAULT) };
+      return { ...saved, tab: initialFocus === "study" ? "study" : normalizeTab(saved.tab) };
+    }),
     [citation, setCitation] = useState<{
       value: Citation;
       nonce: number;
@@ -679,6 +678,7 @@ export default function Reader({
             corrections={corrections}
             onFlag={setFlag}
             onAsk={askBlock}
+            onJump={goPage}
             onReload={() => {
               void load();
               void loadCorrections();

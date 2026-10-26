@@ -31,7 +31,9 @@ test("demo paper: library, PDF text layer, math, evidence, prompt, notes persist
   await expect(
     page.locator(".pdfViewer .textLayer span").first(),
   ).toBeAttached();
-  await openTab(page, "Mathematics");
+  // Step 2 (精读) holds the formulas, folded until opened.
+  await openTab(page, "精读");
+  await page.locator(".lesson-formula > summary").first().click();
   await expect(page.locator(".equation-card")).toHaveCount(1);
   await expect(page.locator(".katex-error")).toHaveCount(0);
   await page
@@ -95,7 +97,7 @@ test("demo paper: library, PDF text layer, math, evidence, prompt, notes persist
   const separator = page.getByRole("separator");
   await separator.focus();
   await separator.press("ArrowLeft");
-  await openTab(page, "Notes");
+  await openTab(page, "笔记");
   const notes = await notesSource(page);
   await expect(notes).toBeEnabled();
   const original = (await (await request.get(demo.api + "/notes")).json()).content;
@@ -106,7 +108,13 @@ test("demo paper: library, PDF text layer, math, evidence, prompt, notes persist
   await page.reload();
   await expect(await notesSource(page)).toHaveValue(note);
   await expect(page.getByLabel("PDF 页码")).toHaveValue("2");
-  await openTab(page, "Overview");
+  // Claims and corrections live in the appendix of 精读, grouped by section.
+  await openTab(page, "精读");
+  const claimGroup = page.locator("details.claims-section").filter({ hasText: "问题与贡献" });
+  const openClaims = async () => {
+    if ((await claimGroup.getAttribute("open")) === null) await claimGroup.locator("summary").click();
+  };
+  await openClaims();
   await page.getByLabel("纠错 demo_chunk").click();
   await page
     .getByLabel("正确解释")
@@ -118,6 +126,7 @@ test("demo paper: library, PDF text layer, math, evidence, prompt, notes persist
     page.locator(".human-correction").filter({ hasText: "验收记录" }),
   ).toBeVisible();
   await page.reload();
+  await openClaims();
   await expect(
     page.locator(".human-correction").filter({ hasText: "验收记录" }),
   ).toBeVisible();
@@ -136,12 +145,12 @@ test("demo paper: library, PDF text layer, math, evidence, prompt, notes persist
   expect(readFileSync(resolve(demo.dir, "notes.md"), "utf8")).toBe(humanNotes);
   expect(readFileSync(resolve(demo.dir, "corrections.jsonl"), "utf8")).toBe(humanCorrections);
   await page.getByRole("button", { name: "刷新报告", exact: true }).click();
+  await openClaims();
   await expect(
     page.locator(".human-correction").filter({ hasText: "验收记录" }),
   ).toBeVisible();
-  await openTab(page, "Experiments");
+  // Experiments and related work are chapters of the same read.
   await expect(page.locator(".experiment-card")).toHaveCount(1);
-  await openTab(page, "Relations");
   await expect(page.locator(".relation-card")).toHaveCount(1);
   await page
     .getByRole("button", { name: /flow matching/ })
@@ -156,7 +165,7 @@ test("demo paper: library, PDF text layer, math, evidence, prompt, notes persist
     (await page.locator('.pdfViewer .page[data-page-number="2"]').boundingBox())!.width;
   const wideWidth = await paperWidth();
   await page.setViewportSize({ width: 1280, height: 800 });
-  await openTab(page, "Mathematics");
+  await openTab(page, "精读");
   await expect(page.locator(".reader-layout")).toBeVisible();
   await expect.poll(paperWidth).toBeLessThan(wideWidth);
   await expect(page.locator('.pdfViewer .page[data-page-number="2"] canvas')).toBeVisible();
@@ -184,7 +193,7 @@ test("study tab: reading route, self-test, judgment and ideas autosave; command 
   await expect(page.locator(".pdfViewer .page canvas").first()).toBeVisible({
     timeout: 30000,
   });
-  await openTab(page, "Study");
+  await openTab(page, "自测与思考");
   await expect(page.locator(".pass-card")).toHaveCount(3);
   await expect(page.locator(".self-test")).toHaveCount(3);
   // Reading-route stop jumps the PDF without a quote search.
@@ -211,8 +220,8 @@ test("study tab: reading route, self-test, judgment and ideas autosave; command 
   expect(study.study.ideas[0].text).toBe("试试随扰动自适应的动作块长度");
   // Keyboard: tab shortcut, then the command palette with a page number.
   await page.locator("body").click({ position: { x: 5, y: 300 } });
-  await page.keyboard.press("3");
-  await expect(page.locator(".equation-card").first()).toBeVisible();
+  await page.keyboard.press("2");
+  await expect(page.locator(".lesson-toc")).toBeVisible();
   await page.keyboard.press("Control+k");
   await page.getByLabel("搜索命令").fill("2");
   await page.keyboard.press("Enter");
@@ -338,7 +347,7 @@ test("local PDF upload can be read without analysis; notes can be persisted", as
     { encoding: "utf8" },
   );
   expect(JSON.parse(localPrepared).metadata.paper_id).toBe(localId);
-  await openTab(page, "Notes");
+  await openTab(page, "笔记");
   const notes = await notesSource(page);
   await notes.fill("# 本地论文\n\n尚未分析也能保存笔记。");
   page.once("dialog", (dialog) => dialog.dismiss());
