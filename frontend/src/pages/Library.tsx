@@ -10,6 +10,7 @@ import {
   HardDrive,
   Lightbulb,
   List,
+  Milestone,
   Paperclip,
   Plus,
   RefreshCw,
@@ -19,7 +20,7 @@ import {
   X,
 } from "lucide-react";
 import { api, readLocal, USER_NAME, writeLocal } from "../api";
-import type { Paper, StudyOverview, StudySummary } from "../types";
+import type { BackupStatus, Paper, ResearchLine, StudyOverview, StudySummary } from "../types";
 import Modal from "../components/Modal";
 import { useCommands, type CommandSource } from "../components/CommandPalette";
 const GREEK: Record<string, string> = {
@@ -64,10 +65,19 @@ const TOPICS = [
   "World Model",
   "Diffusion / Flow Matching",
   "视频生成",
+  "推理加速",
+  "LLM 推理与 RL",
   "Transformer / LLM / VLM",
-  "强化学习与机器人",
+  "具身机器人",
   "计算机视觉",
 ];
+const lineKind = { idea: "Idea", direction: "方向" };
+const paperKey = (p: Paper) => `${p.paper_id}/${p.version}`;
+const backupTime = (iso: string) => {
+  const d = new Date(iso);
+  const day = d.toDateString() === new Date().toDateString() ? "今天" : `${d.getMonth() + 1}月${d.getDate()}日`;
+  return `${day} ${d.toTimeString().slice(0, 5)}`;
+};
 const ARXIV =
   /^(?:https?:\/\/(?:www\.)?arxiv\.org\/(?:abs|pdf)\/)?(\d{4}\.\d{4,5}(?:v\d+)?)(?:\.pdf)?\/?$/i;
 type View = "library" | "recent" | "ideas";
@@ -96,6 +106,10 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
     [loading, setLoading] = useState(true);
   const [query, setQuery] = useState(""),
     [topic, setTopic] = useState(""),
+    [lines, setLines] = useState<ResearchLine[]>([]),
+    [line, setLine] = useState(""),
+    [backup, setBackup] = useState<BackupStatus | null>(null),
+    [backingUp, setBackingUp] = useState(false),
     [year, setYear] = useState(""),
     [status, setStatus] = useState(""),
     [view, setView] = useState<View>("library"),
@@ -115,6 +129,12 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
       api<StudyOverview>("/api/study/overview")
         .then(setStudy)
         .catch(() => {});
+      api<{ lines: ResearchLine[] }>("/api/lines")
+        .then((r) => setLines(r.lines))
+        .catch(() => {});
+      api<BackupStatus>("/api/backup")
+        .then(setBackup)
+        .catch(() => {});
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -125,6 +145,9 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
     void load();
   }, [load]);
   const arxivMatch = query.trim().match(ARXIV);
+  const activeLine = lines.find((l) => l.id === line);
+  const linePos = (p: Paper) =>
+    activeLine ? activeLine.papers.findIndex((x) => x.key === paperKey(p)) : -1;
   const filtered = papers.filter(
     (p) =>
       (!query ||
@@ -136,10 +159,28 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
               .toLowerCase(),
           )) &&
       (!topic || p.topics.includes(topic)) &&
+      (!activeLine || linePos(p) >= 0) &&
       (!year || String(p.year) === year) &&
       (!status || p.reading_status === status) &&
       (view !== "recent" || p.last_opened_at),
   );
+  // Inside a research line, papers follow the line's reading order.
+  if (activeLine) filtered.sort((a, b) => linePos(a) - linePos(b));
+  const pickLine = (id: string) => {
+    setLine(id);
+    setTopic("");
+    if (view === "ideas") setView("library");
+  };
+  const backupNow = async () => {
+    setBackingUp(true);
+    try {
+      setBackup(await api<BackupStatus>("/api/backup", { method: "POST" }));
+    } catch (e) {
+      setBackup((b) => b && { ...b, error: (e as Error).message });
+    } finally {
+      setBackingUp(false);
+    }
+  };
   const topics = [...new Set([...TOPICS, ...papers.flatMap((p) => p.topics)])];
   const summary = (p: Paper): StudySummary | undefined =>
     study.papers[`${p.paper_id}/${p.version}`];
@@ -231,15 +272,40 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
             想法本 <span>{study.ideas.length}</span>
           </button>
         </nav>
+        {lines.length > 0 && (
+          <>
+            <div className="side-section-title">
+              研究线 <span>{lines.length}</span>
+            </div>
+            {lines.map((l) => (
+              <button
+                key={l.id}
+                className={`topic-nav line-nav ${line === l.id ? "selected" : ""}`}
+                title={l.question}
+                onClick={() => pickLine(line === l.id ? "" : l.id)}
+              >
+                <Milestone size={15} />
+                <span className="line-nav-name">
+                  {l.name}
+                  <em className={l.kind}>{lineKind[l.kind]}</em>
+                </span>
+                <small>{l.papers.length}</small>
+              </button>
+            ))}
+          </>
+        )}
         <div className="side-section-title">
-          研究方向 <span>{topics.length}</span>
+          技术标签 <span>{topics.length}</span>
         </div>
         <button
-          className={`topic-nav ${!topic ? "selected" : ""}`}
-          onClick={() => setTopic("")}
+          className={`topic-nav ${!topic && !line ? "selected" : ""}`}
+          onClick={() => {
+            setTopic("");
+            setLine("");
+          }}
         >
           <FolderOpen size={15} />
-          全部方向
+          全部论文
         </button>
         {topics.map((t, i) => (
           <button
@@ -247,6 +313,7 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
             className={`topic-nav ${topic === t ? "selected" : ""}`}
             onClick={() => {
               setTopic(t);
+              setLine("");
               if (view === "ideas") setView("library");
             }}
           >
@@ -262,6 +329,18 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
           <div>
             <strong>你的研究，保存在本机</strong>
             <p>PDF、报告、笔记与学习记录 · 无需 API</p>
+            {backup && (
+              <p className="backup-line" title={`备份位置：${backup.dir}`}>
+                {backup.error
+                  ? `备份失败：${backup.error}`
+                  : backup.last
+                    ? `已备份 ${backupTime(backup.last.created_at)} · 保留 ${backup.count} 份`
+                    : backup.auto ? "尚未备份" : "自动备份未开启"}
+                <button disabled={backingUp} onClick={() => void backupNow()}>
+                  {backingUp ? "备份中…" : "立即备份"}
+                </button>
+              </p>
+            )}
           </div>
         </div>
       </aside>
@@ -398,7 +477,7 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
             </div>
             <div className="library-heading">
               <h2>
-                {view === "recent" ? "最近阅读" : "我的文献库"}
+                {view === "recent" ? "最近阅读" : activeLine ? activeLine.name : "我的文献库"}
                 <span className="count-pill">{filtered.length}</span>
               </h2>
               <div className="library-tools">
@@ -470,6 +549,16 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
                 {w}
               </div>
             ))}
+            {activeLine && (
+              <section className={`line-brief ${activeLine.kind}`} aria-label="研究线说明">
+                <div className="line-brief-head">
+                  <span>{activeLine.kind === "idea" ? "IDEA · 研究线" : "方向 · 研究线"}</span>
+                  {activeLine.status && <em>{activeLine.status}</em>}
+                </div>
+                <p>{activeLine.question}</p>
+                <small>按下面的顺序读；每张卡片写了这篇在这条线上的作用。</small>
+              </section>
+            )}
             {loading ? (
               <div className="empty-state">正在读取本地文献…</div>
             ) : filtered.length === 0 ? (
@@ -490,6 +579,7 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
                       papers.length
                         ? (setQuery(""),
                           setTopic(""),
+                          setLine(""),
                           setYear(""),
                           setStatus(""),
                           setView("library"))
@@ -518,6 +608,15 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
                       </span>
                     </div>
                     <h2>{displayTitle(p.title)}</h2>
+                    {activeLine && activeLine.papers[linePos(p)] && (
+                      <div className="line-role">
+                        <b>{linePos(p) + 1}</b>
+                        <div>
+                          <strong>{activeLine.papers[linePos(p)].role}</strong>
+                          <span>{activeLine.papers[linePos(p)].why}</span>
+                        </div>
+                      </div>
+                    )}
                     <p className="authors">
                       {p.authors.length
                         ? p.authors.slice(0, 3).join(" · ") +

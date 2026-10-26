@@ -41,6 +41,7 @@ import { useCommands, type CommandSource } from "../components/CommandPalette";
 import Modal from "../components/Modal";
 import Markdown from "../components/Markdown";
 import {blockContext, reportBlocks} from "../features/report/reading";
+import { useConceptNames } from "../features/report/conceptNames";
 import "../features/report/reading.css";
 import "../features/reader/reader-shell.css";
 import { displayTitle, readingLabel } from "./Library";
@@ -276,6 +277,7 @@ export default function Reader({
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
   });
+  const conceptName = useConceptNames();
   const commands = useMemo<CommandSource>(
     () => ({
       commands: [
@@ -336,7 +338,7 @@ export default function Reader({
         ...(report?.concept_links || []).map((c) => ({
           id: `concept-${c}`,
           group: "概念卡片",
-          label: c.replaceAll("-", " "),
+          label: conceptName(c),
           keywords: "concept 概念",
           run: () => setConcept(c),
         })),
@@ -365,7 +367,7 @@ export default function Reader({
       },
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [report, paper.page_count, goPage],
+    [report, paper.page_count, goPage, conceptName],
   );
   useCommands(commands);
   const resize = (e: React.PointerEvent) => {
@@ -679,6 +681,7 @@ export default function Reader({
             onFlag={setFlag}
             onAsk={askBlock}
             onJump={goPage}
+            onStatus={(s) => void updateStatus(s)}
             onReload={() => {
               void load();
               void loadCorrections();

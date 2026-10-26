@@ -33,7 +33,7 @@
 - 卡片里一键「加入术语表」，之后的翻译都按你的译法来。
 
 **学习与研究判断**
-- **Study 标签**：三遍读法阅读路线（点页码直接跳原文）、先写答案再对照的自测题、新意度 × 有效性 × 问题大小的价值打分、想法本（文献库汇总所有论文的想法）。
+- **自测与思考**：三遍读法阅读路线（点页码直接跳原文）、先写答案再对照的自测题、新意度 × 有效性 × 问题大小的价值打分、想法本（文献库汇总所有论文的想法）。
 - **笔记与纠错**：Markdown + 公式笔记；对 AI 解释「标记问题」会作为事件保留，重新生成报告也不会覆盖人工内容。
 - **带着上下文提问**：自动整理论文、页码和选中内容，复制到 Claude / ChatGPT / Kimi / DeepSeek，支持苏格拉底式追问和费曼检查两种模式。
 
@@ -42,6 +42,12 @@
 - 截图直接粘贴或拖进来，图片在正文里原样显示，光标落到图片下一行接着写；也支持 Markdown、$公式$、代码段和「源码」模式。
 - 边写边自动保存，`Ctrl S` 立即保存；删除后 10 秒内可撤销，文件进 `memos/.trash`，较早版本留在 `memos/.history`。
 - 每条随记是数据目录 `memos/` 下的一个 Markdown 文件，图片在 `memos/assets/`，用 Typora、Obsidian 打开也能正常显示。
+
+**按研究线整理文献**
+- 文献库左侧「研究线」：按你在做的 idea 或方向分组，每条线有一句话说明要回答的问题，组内论文按阅读顺序排，卡片上写这篇在这条线上的作用（基线、基座、方法借鉴、风险……）。一篇论文可以在多条线里。
+- 研究线写在数据目录的 `lines.json`，手动编辑即可（格式见 `backend/app/lines.py`）；「技术标签」仍按方法类别筛选。
+- 概念卡片：精读的「背景知识」一章先列出这篇用到的通用概念（DiT、视频 VAE、投机解码、RLVR / GRPO、思维链……），点开是独立于论文的讲解和库内对应论文。
+- 读完第 ③ 步可以「标记为已读完」，文献库里的「阅读中 / 已完成」就按真实进度统计。
 
 **更多**
 - `Ctrl K` 命令面板与全键盘操作；Claude 风格界面，深浅色主题；手机 / iPad 同一 Wi-Fi 下带口令访问。
@@ -109,13 +115,14 @@ python scripts\verify-nature-skills.py       # 可选：再次核验
 
 - 所有论文、报告、笔记和学习记录都是本机普通文件（JSON / Markdown），默认在项目文件夹里且被 Git 忽略；可用 `.env.local` 的 `PAPERLAB_DATA_DIR` 放到其他磁盘。
 - 服务只绑定 127.0.0.1（局域网模式需口令）。网页本身不调用任何模型 API，也不需要 API Key；Codex 工作台调用的是你本机已登录的 Codex CLI，划词翻译完全离线。
-- 定期备份数据目录。原始 PDF 不在 Git 里，只备份仓库会丢失原文。
+- 自动备份：服务启动时和运行期间每 24 小时，把你写的所有东西（papers/、memos/、concepts/、knowledge/、research-outputs/、lines.json 和导入的本地 PDF）打成一个 zip，放到 `PAPERLAB_BACKUP_DIR`（默认 `~/PaperLab-backups`，与数据盘分开），没有变化就跳过，保留最近 10 份。文献库左下角显示上次备份时间，也可以「立即备份」。arXiv 的 PDF 与 LaTeX 可以重新下载，不进备份。恢复时把 zip 解压回数据目录即可。
 
 ```text
 <数据目录>/
   papers/<ID>/<vN>/        metadata.json · report.json/md · notes.md · study.json · corrections.jsonl
   local-assets/<ID>/<vN>/  原始 PDF、LaTeX 源码、页文本缓存
   memos/                   随记：<id>.md · assets/ 图片 · .history/ 旧版本 · .trash/ 已删除
+  lines.json               研究线：按 idea / 方向分组的论文与阅读顺序
   concepts/  knowledge/  research-outputs/
 ```
 

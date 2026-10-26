@@ -218,6 +218,10 @@ test("study tab: reading route, self-test, judgment and ideas autosave; command 
   expect(study.study.judgment).toMatchObject({ novelty: 4, effectiveness: 3, problem_size: 5 });
   expect(study.study.tests[0]).toMatchObject({ question_id: "demo_q1", verdict: "got_it" });
   expect(study.study.ideas[0].text).toBe("试试随扰动自适应的动作块长度");
+  // Finishing step 3 marks the paper as read, and it can be undone.
+  await page.getByRole("button", { name: "标记为已读完" }).click();
+  await expect(page.getByRole("button", { name: "已读完" })).toBeVisible();
+  expect((await (await request.get(demo.api)).json()).reading_status).toBe("completed");
   // Keyboard: tab shortcut, then the command palette with a page number.
   await page.locator("body").click({ position: { x: 5, y: 300 } });
   await page.keyboard.press("2");

@@ -6,6 +6,7 @@ import {Citations} from "./ReportPane";
 import {findExplanations, reportBlocks} from "./reading";
 import {ComparisonTables, DeltaTable, EvidenceAudit, PriorityBadge} from "./ReadingChain";
 import {ClaimCard, EquationCard, ExperimentCard, RelationCard} from "./ReportParts";
+import {useConceptNames} from "./conceptNames";
 
 type Chapter = {id: string; title: string; hint: string; body: React.ReactNode};
 
@@ -30,10 +31,18 @@ export default function GuidedReport({report,onAsk,onCitation,onTab,onFlag,corre
   </section>;
   const tutorial=report.tutorial;
   const faq=tutorial?.faq.length?tutorial.faq:[];
+  const conceptName=useConceptNames();
+  const conceptLinks=report.concept_links.length>0&&<div className="concept-links">
+    <h3>先看概念卡片</h3>
+    {report.concept_links.map(c=><button key={c} onClick={()=>onConcept(c)}><BookOpen size={14}/>{conceptName(c)}<ExternalLink size={12}/></button>)}
+  </div>;
   const claimsIn=(group:string)=>report.claims.filter(c=>c.section===group);
   // One reading path, macro before micro: background → problem and deltas → method → training/inference → maths → example → evidence → doubts → limits → context → sources.
   const chapters=([
-    tutorial?.prerequisites.length?{id:"background",title:"背景知识",hint:"先补齐读这篇论文要用到的概念",body:tutorial.prerequisites.map(u=>section(unit(u)))}:null,
+    tutorial?.prerequisites.length||report.concept_links.length?{id:"background",title:"背景知识",hint:"先补齐读这篇论文要用到的概念",body:<>
+      {conceptLinks}
+      {(tutorial?.prerequisites||[]).map(u=>section(unit(u)))}
+    </>}:null,
     {id:"problem",title:"问题与动机",hint:"论文要解决什么、为什么现有做法不够、新在哪里",body:<>
       {pick("overview","motivation","contributions").map(section)}
       {!!report.deltas?.length&&<section className="lesson-section"><h4>改进点对照</h4><DeltaTable deltas={report.deltas} onCitation={onCitation}/></section>}
@@ -64,10 +73,6 @@ export default function GuidedReport({report,onAsk,onCitation,onTab,onFlag,corre
     {id:"limits",title:"局限与待核实",hint:"原文疑点、适用边界与复现限制",body:pick("limitations").map(section)},
     {id:"relations",title:"关联研究",hint:"它站在谁的肩膀上，和库里哪些论文有关",body:<>
       {report.related_papers.length?report.related_papers.map((r,i)=><RelationCard key={i} relation={r} onCitation={onCitation}/>):<p className="muted">报告没有列出关联研究。</p>}
-      {report.concept_links.length>0&&<div className="concept-links">
-        <h3>关联概念卡片</h3>
-        {report.concept_links.map(c=><button key={c} onClick={()=>onConcept(c)}><BookOpen size={14}/>{c.replaceAll("-"," ")}<ExternalLink size={12}/></button>)}
-      </div>}
     </>},
     {id:"sources",title:"附：结论与原文证据",hint:"报告里每条关键结论及其原文出处；发现问题就在这里标记纠错",body:<>
       {CLAIM_GROUPS.map(([group,label])=>claimsIn(group).length>0&&<details className="claims-section" key={group}>

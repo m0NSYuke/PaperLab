@@ -69,6 +69,7 @@ export default function ReportPane({
   study,
   onAsk,
   onJump,
+  onStatus,
 }: {
   paper: Paper;
   report: Report | null;
@@ -84,6 +85,7 @@ export default function ReportPane({
   study: React.ReactNode;
   onAsk: (block: ReportBlock) => void;
   onJump: (page: number) => void;
+  onStatus: (status: Paper["reading_status"]) => void;
 }) {
   const [copied, setCopied] = useState(false),
     [copyError, setCopyError] = useState("");
@@ -224,6 +226,15 @@ export default function ReportPane({
             <div className="next-step">
               <button className="secondary" onClick={() => onTab("notes")}>写下自己的理解</button>
               <span>把这次读懂的东西用自己的话记进笔记</span>
+              {paper.reading_status === "completed" ? (
+                <button className="secondary finish-mark is-done" onClick={() => onStatus("reading")} title="改回阅读中">
+                  <CheckCheck size={15} />已读完
+                </button>
+              ) : (
+                <button className="primary finish-mark" onClick={() => onStatus("completed")}>
+                  <CheckCheck size={15} />标记为已读完
+                </button>
+              )}
             </div>
           </>
         ) : error ? (

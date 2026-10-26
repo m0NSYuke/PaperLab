@@ -93,6 +93,8 @@ body {min-width:320px}
 .next-step{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:34px 0 10px;padding:16px 18px;border:1px dashed var(--border-strong);border-radius:var(--radius)}
 .next-step button{display:inline-flex;align-items:center;gap:6px}
 .next-step span{color:var(--muted);font-size:13px}
+.next-step .finish-mark{margin-left:auto}
+.next-step .finish-mark.is-done{color:var(--ok)}
 
 /* Step 2 appendix: claims grouped by section, folded. */
 .guided-report details.claims-section{margin-top:10px;padding-top:0;border-top:0}

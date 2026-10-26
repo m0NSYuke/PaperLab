@@ -213,3 +213,19 @@ export type ReadingState = {
   split: number;
   tab: string;
 };
+/** A research line (研究线): papers grouped by the idea or direction they serve, in reading order. */
+export type ResearchLine = {
+  id: string;
+  name: string;
+  kind: "idea" | "direction";
+  question: string;
+  status: string;
+  papers: { key: string; role: string; why: string }[];
+};
+export type BackupStatus = {
+  dir: string;
+  auto: boolean;
+  count: number;
+  last: { file: string; created_at: string; files: number; bytes: number } | null;
+  error: string;
+};

@@ -48,6 +48,8 @@ def create_app(root: Path | None = None, lan_token: str | None = None, app_root:
     app = FastAPI(title="PaperLab local API", version="0.1.0")
     # Production keeps code (frontend, docs, skills, .env.local) apart from paper data;
     # an explicit root such as a test workspace holds both unless app_root is given.
+    # The real server backs up on its own; tests and PAPERLAB_ROOT e2e workspaces keep snapshots inside themselves.
+    production = root is None and not os.environ.get("PAPERLAB_ROOT")
     root, app_root = (ROOT, app_root or APP_ROOT) if root is None else (root, app_root or root)
     lan_token = lan_token if lan_token is not None else os.environ.get("PAPERLAB_LAN_TOKEN") or None
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"] if lan_token else sorted(LOCAL_HOSTS))
@@ -347,6 +349,10 @@ def create_app(root: Path | None = None, lan_token: str | None = None, app_root:
     register_questions(app, root)
     from .memos import register_memos
     register_memos(app, root)
+    from .lines import register_lines
+    register_lines(app, root)
+    from .backup import default_dir, register_backup
+    register_backup(app, root, default_dir() if production else root / ".runtime" / "backups", auto=production)
     # One local production server. API routes are registered before SPA fallback.
     dist = safe_path(app_root, "frontend", "dist")
     if dist.exists():
