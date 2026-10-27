@@ -87,3 +87,9 @@ Selection translation also listens to `selectionchange` on touch input (coarse p
 - lines.json is now also written by the app (confirm, move, remove, automatic entries), always through data_lock and in a compact form that leaves defaults out so it stays hand-editable.
 - Checked against the 25 already-filed papers: all came out in their actual line.
 
+## Managing research lines in the app (2026-10-27)
+
+- Lines are created, edited and deleted from the library (POST/PATCH/DELETE /api/lines); a fresh install starts from the sidebar's 新建第一条研究线 instead of a hand-written lines.json. Saving keywords re-files papers that no line holds. A line that still holds ideas cannot be deleted.
+- Every card has a 归类 picker for manual, multi-line filing; `auto_file` in lines.json (sidebar switch) turns automatic filing of imports off, while 按关键词自动归类 on one paper always works.
+- Sorting is chosen per view (whole library and each line) and kept in browser storage; a line's default stays its reading order.
+

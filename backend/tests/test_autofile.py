@@ -68,3 +68,41 @@ def test_keyword_matching_respects_word_starts():
     assert hits("world simulator", "as world simulators of") == 1
     assert hits("vla", "openvla and vla models") == 1
     assert hits("robot", "robotic arms") == 1 and hits("rl", "world") == 0
+
+
+def test_create_edit_and_delete_a_line_refiles_unfiled_papers(tmp_path):
+    add_paper(tmp_path, "2501.00010", "Diffusion Policy for Dexterous Hands", "dexterous manipulation with diffusion policy")
+    client = TestClient(create_app(tmp_path))
+    assert client.get("/api/lines").json()["lines"] == []
+    made = client.post("/api/lines", json={"name": "灵巧手操作", "kind": "idea", "question": "灵巧手怎样学会精细操作？",
+                                           "keywords": ["dexterous, diffusion policy", "灵巧手", "Dexterous"]}).json()
+    line = made["lines"][0]
+    assert made["filed"] == 1 and line["id"].startswith("line-") and line["keywords"] == ["dexterous", "diffusion policy", "灵巧手"]
+    assert line["papers"][0]["key"] == "2501.00010/v1" and line["papers"][0]["auto"] is True
+    english = client.post("/api/lines", json={"name": "World Models", "keywords": []}).json()
+    assert english["id"] == "world-models" and english["filed"] == 0
+    edited = client.patch(f"/api/lines/{line['id']}", json={"name": "灵巧手", "kind": "direction", "keywords": ["dexterous"]}).json()
+    assert edited["lines"][0]["name"] == "灵巧手" and edited["lines"][0]["kind"] == "direction"
+    # A line that still holds ideas cannot be deleted; an empty one can, and its papers become unfiled.
+    idea = client.post("/api/ideas", json={"line": line["id"], "title": "触觉反馈"}).json()
+    assert client.delete(f"/api/lines/{line['id']}").status_code == 409
+    client.delete(f"/api/ideas/{idea['id']}")
+    after = client.delete(f"/api/lines/{line['id']}").json()
+    assert [l["id"] for l in after["lines"]] == ["world-models"]
+
+
+def test_auto_filing_can_be_switched_off_and_papers_filed_by_hand(tmp_path):
+    write(tmp_path / "lines.json", {"lines": [{"id": "embodied", "name": "具身", "keywords": ["robot"]},
+                                              {"id": "video", "name": "视频", "keywords": ["video"]}]})
+    client = TestClient(create_app(tmp_path))
+    assert client.get("/api/lines").json()["auto_file"] is True
+    assert client.put("/api/lines/auto-file", json={"enabled": False}).json()["auto_file"] is False
+    robot = add_paper(tmp_path, "2501.00020", "Robot learning from video", "a robot learns from video")
+    assert autofile(tmp_path, robot)["filed"] == []  # switched off: stays unfiled
+    # Filing one paper explicitly still works, and a paper can sit in several lines by hand.
+    assert sorted(client.post("/api/papers/2501.00020/v1/autofile").json()["filed"]) == ["embodied", "video"]
+    client.delete("/api/lines/video/papers/2501.00020/v1")
+    client.put("/api/lines/video/papers/2501.00020/v1", json={})
+    data = client.get("/api/lines").json()
+    assert all(any(p["key"] == "2501.00020/v1" for p in l["papers"]) for l in data["lines"])
+    assert '"auto_file": false' in (tmp_path / "lines.json").read_text(encoding="utf-8")

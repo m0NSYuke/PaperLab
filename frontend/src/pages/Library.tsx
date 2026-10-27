@@ -27,6 +27,8 @@ import CardBrief from "../features/library/CardBrief";
 import KnowledgeGraph from "../features/library/KnowledgeGraph";
 import KnowledgeHits from "../features/library/KnowledgeHits";
 import IdeaBoard from "../features/library/IdeaBoard";
+import LineDialog from "../features/library/LineDialog";
+import LinePicker from "../features/library/LinePicker";
 import { useCommands, type CommandSource } from "../components/CommandPalette";
 const GREEK: Record<string, string> = {
   alpha: "α", beta: "β", gamma: "γ", delta: "δ", epsilon: "ε", lambda: "λ",
@@ -77,6 +79,28 @@ const TOPICS = [
   "计算机视觉",
 ];
 const lineKind = { idea: "Idea", direction: "方向" };
+/** Library orderings; "default" is the line's reading order, or most recently opened for the whole library. */
+const SORTS = {
+  default: "默认顺序",
+  imported_desc: "导入时间：新→旧",
+  imported_asc: "导入时间：旧→新",
+  year_desc: "发表年份：新→旧",
+  year_asc: "发表年份：旧→新",
+  opened: "最近打开",
+  title: "标题 A–Z",
+} as const;
+type Sort = keyof typeof SORTS;
+const SORT_KEY = "paperlab.library.sort";
+const byTime = (a: string | null | undefined, b: string | null | undefined) => (a || "").localeCompare(b || "");
+const comparators: Record<Exclude<Sort, "default">, (a: Paper, b: Paper) => number> = {
+  imported_desc: (a, b) => byTime(b.imported_at, a.imported_at),
+  imported_asc: (a, b) => byTime(a.imported_at, b.imported_at),
+  // Papers without a year go last either way; ties fall back to import time.
+  year_desc: (a, b) => (b.year ?? -1) - (a.year ?? -1) || byTime(b.imported_at, a.imported_at),
+  year_asc: (a, b) => (a.year ?? 9999) - (b.year ?? 9999) || byTime(a.imported_at, b.imported_at),
+  opened: (a, b) => byTime(b.last_opened_at, a.last_opened_at) || byTime(b.imported_at, a.imported_at),
+  title: (a, b) => displayTitle(a.title).localeCompare(displayTitle(b.title), "zh-CN"),
+};
 /** Sidebar entry for papers that no research line holds yet. */
 const UNFILED = "__unfiled";
 const paperKey = (p: Paper) => `${p.paper_id}/${p.version}`;
@@ -117,6 +141,11 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
     [line, setLine] = useState(""),
     [ideas, setIdeas] = useState<LineIdea[]>([]),
     [focusIdea, setFocusIdea] = useState<string | null>(null),
+    [lineDialog, setLineDialog] = useState<null | "new" | ResearchLine>(null),
+    [lineNotice, setLineNotice] = useState(""),
+    [autoFile, setAutoFile] = useState(true),
+    // One choice per view (whole library, each research line), remembered in this browser.
+    [sorts, setSorts] = useState<Record<string, Sort>>(() => readLocal(SORT_KEY, {})),
     [backup, setBackup] = useState<BackupStatus | null>(null),
     [backingUp, setBackingUp] = useState(false),
     [year, setYear] = useState(""),
@@ -138,8 +167,11 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
       api<StudyOverview>("/api/study/overview")
         .then(setStudy)
         .catch(() => {});
-      api<{ lines: ResearchLine[] }>("/api/lines")
-        .then((r) => setLines(r.lines))
+      api<{ lines: ResearchLine[]; auto_file: boolean }>("/api/lines")
+        .then((r) => {
+          setLines(r.lines);
+          setAutoFile(r.auto_file);
+        })
         .catch(() => {});
       api<{ ideas: LineIdea[] }>("/api/ideas")
         .then((r) => setIdeas(r.ideas))
@@ -180,7 +212,15 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
       (view !== "recent" || p.last_opened_at),
   );
   // Inside a research line, papers follow the line's reading order.
-  if (activeLine) filtered.sort((a, b) => linePos(a) - linePos(b));
+  const sortScope = line || "library";
+  const sort: Sort = sorts[sortScope] && SORTS[sorts[sortScope]] ? sorts[sortScope] : "default";
+  const setSort = (value: Sort) => {
+    const next = { ...sorts, [sortScope]: value };
+    setSorts(next);
+    writeLocal(SORT_KEY, next);
+  };
+  if (sort !== "default") filtered.sort(comparators[sort]);
+  else if (activeLine) filtered.sort((a, b) => linePos(a) - linePos(b));
   const pickLine = (id: string) => {
     setLine(id);
     setTopic("");
@@ -200,6 +240,25 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
   const moveLine = async (from: string, to: string, p: Paper) => {
     await membership("PUT", to, p);
     await membership("DELETE", from, p);
+  };
+  const switchAutoFile = async (enabled: boolean) => {
+    try {
+      const r = await api<{ auto_file: boolean }>("/api/lines/auto-file", { method: "PUT", body: JSON.stringify({ enabled }) });
+      setAutoFile(r.auto_file);
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  };
+  const deleteLine = async (l: ResearchLine) => {
+    if (!window.confirm(`删除研究线「${l.name}」？里面的论文不会被删除，会回到「未归入研究线」。`)) return;
+    try {
+      const r = await api<{ lines: ResearchLine[] }>(`/api/lines/${l.id}`, { method: "DELETE" });
+      setLines(r.lines);
+      setLine("");
+      setLineNotice("");
+    } catch (e) {
+      setLineNotice((e as Error).message);
+    }
   };
   const refile = async (p: Paper) => {
     try {
@@ -317,11 +376,26 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
             知识图谱
           </button>
         </nav>
-        {lines.length > 0 && (
+        {(
           <>
             <div className="side-section-title">
-              研究线 <span>{lines.length}</span>
+              研究线
+              <span className="side-section-tools">
+                {lines.length > 0 && lines.length}
+                <button className="side-add" aria-label="新建研究线" title="新建研究线" onClick={() => setLineDialog("new")}>
+                  <Plus size={14} />
+                </button>
+              </span>
             </div>
+            {lines.length === 0 && (
+              <button className="topic-nav line-nav line-empty" onClick={() => setLineDialog("new")}>
+                <Plus size={15} />
+                <span className="line-nav-name">
+                  新建第一条研究线
+                  <em>按你的 idea 或方向给论文分组</em>
+                </span>
+              </button>
+            )}
             {lines.map((l) => (
               <button
                 key={l.id}
@@ -360,6 +434,12 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
                 </span>
                 <small>{unfiled.length}</small>
               </button>
+            )}
+            {lines.length > 0 && (
+              <label className="auto-file-switch" title="关闭后，新导入的论文都先放进「未归入研究线」，由你手动归类">
+                <input type="checkbox" checked={autoFile} onChange={(e) => void switchAutoFile(e.target.checked)} />
+                导入时自动归类
+              </label>
             )}
           </>
         )}
@@ -564,6 +644,13 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
                       <option key={y}>{y}</option>
                     ))}
                 </select>
+                <select aria-label="排序" value={sort} onChange={(e) => setSort(e.target.value as Sort)}>
+                  {(Object.keys(SORTS) as Sort[]).map((key) => (
+                    <option key={key} value={key}>
+                      {key === "default" ? (activeLine ? "阅读顺序" : "默认：最近打开") : SORTS[key]}
+                    </option>
+                  ))}
+                </select>
                 <select
                   aria-label="按阅读状态筛选"
                   value={status}
@@ -625,10 +712,20 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
                 <div className="line-brief-head">
                   <span>{activeLine.kind === "idea" ? "IDEA · 研究线" : "方向 · 研究线"}</span>
                   {activeLine.status && <em>{activeLine.status}</em>}
+                  <span className="line-brief-tools">
+                    <button onClick={() => setLineDialog(activeLine)}>编辑</button>
+                    <button onClick={() => void deleteLine(activeLine)}>删除</button>
+                  </span>
                 </div>
                 <p>{activeLine.question}</p>
                 <small>按下面的顺序读；每张卡片写了这篇在这条线上的作用。</small>
               </section>
+            )}
+            {lineNotice && (
+              <div className="line-notice" role="status">
+                {lineNotice}
+                <button className="text-button" onClick={() => setLineNotice("")}>知道了</button>
+              </div>
             )}
             {line === UNFILED && (
               <section className="line-brief" aria-label="未归入说明">
@@ -772,6 +869,7 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
                           {analysisLabel[p.analysis_status]}
                         </span>
                         <CardBrief paper={p} lines={lines} />
+                        <LinePicker paper={p} lines={lines} onLines={setLines} onError={setError} />
                       </div>
                       <div className="card-actions">
                         <button
@@ -823,6 +921,19 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
           </span>
         </footer>
       </main>
+      {lineDialog && (
+        <LineDialog
+          line={lineDialog === "new" ? undefined : lineDialog}
+          onClose={() => setLineDialog(null)}
+          onSaved={(r) => {
+            setLines(r.lines);
+            setLineDialog(null);
+            setFocusIdea(null);
+            pickLine(r.id);
+            setLineNotice(r.filed ? `按关键词把 ${r.filed} 篇未归入的论文自动归到了这里，请在卡片上确认。` : "");
+          }}
+        />
+      )}
       {importOpen && (
         <ImportDialog
           initialTab={importOpen}

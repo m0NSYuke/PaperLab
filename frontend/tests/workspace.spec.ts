@@ -472,3 +472,53 @@ test("research line Idea 区: capture a spark, score its tradeoffs, compare, del
   await expect(board.locator(".idea-card")).toHaveCount(2);
   expect(exceptions).toEqual([]);
 });
+
+test("research lines: create from the sidebar, file a paper by hand, switch auto filing, edit and delete", async ({ page, request }) => {
+  const exceptions: string[] = [];
+  page.on("pageerror", (e) => exceptions.push(e.message));
+  await page.goto("/");
+  await page.getByRole("button", { name: "新建研究线" }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByPlaceholder("例如：自回归视频的投机解码").fill("动作块长度");
+  await dialog.getByPlaceholder(/一两句话/).fill("动作块该多长？");
+  await dialog.getByPlaceholder(/用顿号/).fill("action chunk、chunk length");
+  await dialog.getByRole("button", { name: "创建" }).click();
+  await expect(page.locator(".library-heading h2")).toContainText("动作块长度");
+  await expect(page.locator(".line-brief")).toContainText("动作块该多长？");
+  // File the demo paper into the new line by hand from its card.
+  await page.locator(".line-nav", { hasText: "测试研究线" }).click();
+  const card = page.locator(".paper-card").first();
+  await card.getByRole("button", { name: /归类/ }).click();
+  // These checkboxes follow the server, so click and wait for the new state.
+  await card.getByRole("checkbox", { name: "动作块长度" }).click();
+  await expect.poll(async () => {
+    const lines = (await (await request.get("/api/lines")).json()).lines;
+    return lines.find((l: { name: string }) => l.name === "动作块长度").papers.length;
+  }).toBe(1);
+  await expect(card.getByRole("checkbox", { name: "测试研究线" })).toBeChecked();
+  // The switch for automatic filing on import.
+  await page.getByLabel("导入时自动归类").click();
+  await expect.poll(async () => (await (await request.get("/api/lines")).json()).auto_file).toBe(false);
+  await expect(page.getByLabel("导入时自动归类")).not.toBeChecked();
+  await page.getByLabel("导入时自动归类").click();
+  await expect(page.getByLabel("导入时自动归类")).toBeChecked();
+  // Edit, then delete the new line; the paper stays in the library.
+  await page.locator(".line-nav", { hasText: "动作块长度" }).click();
+  await page.locator(".line-brief-tools").getByRole("button", { name: "编辑" }).click();
+  await page.getByRole("dialog").getByPlaceholder("例如：自回归视频的投机解码").fill("动作块长度自适应");
+  await page.getByRole("dialog").getByRole("button", { name: "保存" }).click();
+  await expect(page.locator(".library-heading h2")).toContainText("动作块长度自适应");
+  page.once("dialog", (d) => void d.accept());
+  await page.locator(".line-brief-tools").getByRole("button", { name: "删除" }).click();
+  await expect(page.locator(".line-nav", { hasText: "动作块长度自适应" })).toHaveCount(0);
+  await expect(page.locator(".paper-card")).toHaveCount(2);
+  // Sorting: titles A–Z, remembered per view across reloads.
+  await page.getByLabel("排序").selectOption("title");
+  const titles = await page.locator(".paper-card h2").allInnerTexts();
+  expect(titles).toEqual([...titles].sort((a, b) => a.localeCompare(b, "zh-CN")));
+  await page.reload();
+  await expect(page.getByLabel("排序")).toHaveValue("title");
+  await page.locator(".line-nav", { hasText: "测试研究线" }).click();
+  await expect(page.getByLabel("排序")).toHaveValue("default");
+  expect(exceptions).toEqual([]);
+});

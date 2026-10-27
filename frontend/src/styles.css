@@ -4189,3 +4189,136 @@ details summary > span {
   font-size: 11px;
   line-height: 1.3;
 }
+
+/* Creating and editing research lines. */
+.side-section-tools {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.side-add {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  color: var(--muted);
+}
+.side-add:hover {
+  background: var(--hover);
+  color: var(--accent);
+}
+.line-nav.line-empty {
+  border: 1px dashed var(--border-strong);
+  color: var(--accent);
+}
+.line-brief-tools {
+  margin-left: auto;
+  display: inline-flex;
+  gap: 4px;
+}
+.line-brief-tools button {
+  padding: 1px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.line-brief-tools button:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.line-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--warn-soft);
+  color: var(--warn);
+  font-size: 13px;
+}
+.line-notice button {
+  margin-left: auto;
+}
+.field-hint {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--faint);
+}
+
+/* Filing a paper by hand: the 归类 popover on each card. */
+.line-picker {
+  position: relative;
+}
+.line-picker .card-brief-trigger b {
+  margin-left: 2px;
+  font-weight: 600;
+  color: var(--accent);
+}
+.line-picker-pop {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 10px);
+  z-index: 5;
+  width: min(300px, 80vw);
+  padding: 12px 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  font-size: 13px;
+  text-align: left;
+}
+.line-picker-pop label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 4px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--text-2);
+}
+.line-picker-pop label:hover {
+  background: var(--hover);
+}
+.line-picker-pop label.on {
+  color: var(--text);
+  font-weight: 500;
+}
+.line-picker-pop label em {
+  margin-left: auto;
+  font-style: normal;
+  font-size: 11px;
+  color: var(--warn);
+}
+.line-picker-pop input {
+  accent-color: var(--accent);
+}
+.line-picker-auto {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 6px;
+  padding: 6px 4px;
+  border-top: 1px solid var(--border);
+  color: var(--accent);
+  font-size: 12.5px;
+}
+.line-picker-pop .brief-empty {
+  margin-top: 6px;
+  font-size: 12px;
+}
+.auto-file-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 11px 0;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.auto-file-switch input {
+  accent-color: var(--accent);
+}

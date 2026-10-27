@@ -8,7 +8,7 @@ from app.main import create_app
 
 def test_lines_are_optional_and_validated(tmp_path):
     client = TestClient(create_app(tmp_path))
-    assert client.get("/api/lines").json() == {"schema_version": "1.0", "lines": []}
+    assert client.get("/api/lines").json() == {"schema_version": "1.0", "auto_file": True, "lines": []}
     (tmp_path / "lines.json").write_text(json.dumps({"lines": [{
         "id": "cot-teaching", "name": "无答案 CoT 互教", "kind": "idea", "question": "不给答案能否互相变强？",
         "papers": [{"key": "2406.14629/v3", "role": "最接近的前作", "why": "每轮都用了标签"}]}]}, ensure_ascii=False), encoding="utf-8")

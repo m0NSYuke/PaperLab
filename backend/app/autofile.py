@@ -102,7 +102,8 @@ def autofile(root: Path, meta: Metadata, force: bool = False) -> dict:
         if lines_path.exists():
             data = Lines.model_validate(read_json(lines_path))
             already = any(p.key == key for line in data.lines for p in line.papers)
-            if force or not already:
+            # `force` is the user asking for this paper explicitly; otherwise respect the switch.
+            if force or (data.auto_file and not already):
                 best = result["lines"][0]["score"] if result["lines"] else 0
                 for s in result["lines"]:
                     if best >= THRESHOLD and s["score"] >= max(THRESHOLD, 0.7 * best):
