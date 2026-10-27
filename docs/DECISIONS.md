@@ -93,3 +93,9 @@ Selection translation also listens to `selectionchange` on touch input (coarse p
 - Every card has a 归类 picker for manual, multi-line filing; `auto_file` in lines.json (sidebar switch) turns automatic filing of imports off, while 按关键词自动归类 on one paper always works.
 - Sorting is chosen per view (whole library and each line) and kept in browser storage; a line's default stays its reading order.
 
+## Editable tags and deleting papers (2026-10-27)
+
+- The technical-tag list moved from a frontend constant to `<data>/tags.json` (built-in defaults until first edited). Tags used by any paper always show; deleting a tag strips it from every paper, renaming onto an existing tag merges them, and automatic filing never reapplies a deleted tag. Tag names go in request bodies because several contain "/".
+- Deleting a paper moves its papers/ and local-assets/ folders plus its research-line entries into `<data>/.trash/<id>-<version>-<ms>/`; restore puts all of it back, including each line position. The app never removes data for good.
+- When the data directory is the app folder (the default for new installs), lines.json, ideas.json, tags.json and .trash/ are git-ignored so they cannot be committed by accident.
+

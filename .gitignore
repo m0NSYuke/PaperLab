@@ -27,6 +27,11 @@ concepts/
 knowledge/
 research-outputs/
 /memos/
+# Library files written by the app when the data directory is this folder (the default).
+/lines.json
+/ideas.json
+/tags.json
+/.trash/
 jobs/
 mt-cache.sqlite
 _old-data-on-C/

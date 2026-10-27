@@ -54,6 +54,7 @@
 - **Knowledge search**: type a keyword (Chinese or English) in the library search box; besides filtering cards by title, it lists matching passages from report text, conclusions with their page numbers, equation explanations, your notes, memos and concept cards. Clicking a conclusion opens the paper at that page. Local BM25 (Chinese split into adjacent character pairs), no model or embedding calls.
 - **Knowledge graph**: draws papers, research lines and concept cards as one graph. Edges come from the related work and comparisons the reports name, line membership, the concepts used, and report similarity, each toggleable. Hover to see what a paper connects to; click to read it.
 - **Why read this**: the button at the bottom of each card shows, on hover, the reading motivation (from its research lines), the report's one-line takeaway and the parts worth reading closely.
+- **Add and remove tags, papers and lines**: click "+" next to 技术标签 in the sidebar to add a tag; hover a tag to rename or delete it (deleting removes it from every paper, never the papers themselves); hover a research line to edit or delete it. A card's 归类 panel ticks that paper's tags, takes a new tag, and ends with 从文献库删除: the report, notes and study records move together to `.trash/` in the data directory, the deletion can be undone at once, and the app itself never deletes anything for good.
 - **Sorting**: the whole library and each line keep their own order: default (reading order inside a line, recently opened for the library), import time, publication year, recently opened or title.
 - **Concept cards**: the background chapter of step ② starts with the general concepts the paper uses (DiT, video VAE, speculative decoding, RLVR / GRPO, chain-of-thought…), each a paper-independent explanation linked to the library's papers that use it.
 - Mark a paper as read at the end of step ③, so 阅读中 / 已完成 in the library reflect real progress.
@@ -124,7 +125,7 @@ With the computer and the device on the same private Wi-Fi, stop the service and
 
 - All papers, reports, notes and study records are plain local files (JSON / Markdown), kept in the project folder by default and ignored by Git; set `PAPERLAB_DATA_DIR` in `.env.local` to move them to another disk.
 - The service binds to 127.0.0.1 only (LAN mode requires the key). The web page calls no model API and needs no API key; the Codex workbench uses your locally signed-in Codex CLI, and selection translation is fully offline.
-- Automatic backups: when the service starts and every 24 hours while it runs, everything you wrote (papers/, memos/, concepts/, knowledge/, research-outputs/, lines.json, ideas.json and imported local PDFs) is zipped into `PAPERLAB_BACKUP_DIR` (default `~/PaperLab-backups`, off the data drive; several PaperLab installs on one computer each manage only their own backups). Unchanged data is skipped and the latest 10 are kept. The library's bottom-left corner shows the last backup time and a back-up-now button. arXiv PDFs and LaTeX can be downloaded again and are left out. To restore, unzip a backup back into the data directory.
+- Automatic backups: when the service starts and every 24 hours while it runs, everything you wrote (papers/, memos/, concepts/, knowledge/, research-outputs/, lines.json, ideas.json, tags.json and imported local PDFs) is zipped into `PAPERLAB_BACKUP_DIR` (default `~/PaperLab-backups`, off the data drive; several PaperLab installs on one computer each manage only their own backups). Unchanged data is skipped and the latest 10 are kept. The library's bottom-left corner shows the last backup time and a back-up-now button. arXiv PDFs and LaTeX can be downloaded again and are left out. To restore, unzip a backup back into the data directory.
 
 ```text
 <data directory>/
@@ -133,6 +134,8 @@ With the computer and the device on the same private Wi-Fi, stop the service and
   memos/                   memos: <id>.md · assets/ images · .history/ earlier versions · .trash/ deleted
   lines.json               research lines: papers grouped by idea / direction, in reading order
   ideas.json               ideas, scores and tradeoffs from each line's idea board
+  tags.json                the technical-tag list (built-in defaults until you edit it)
+  .trash/                  papers deleted from the library (undoable, clean up by hand)
   concepts/  knowledge/  research-outputs/
 ```
 

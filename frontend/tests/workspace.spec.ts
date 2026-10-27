@@ -522,3 +522,43 @@ test("research lines: create from the sidebar, file a paper by hand, switch auto
   await expect(page.getByLabel("排序")).toHaveValue("default");
   expect(exceptions).toEqual([]);
 });
+
+test("tags, papers and lines: add, rename and delete tags; delete a paper and undo; line actions in the sidebar", async ({ page, request }) => {
+  const exceptions: string[] = [];
+  page.on("pageerror", (e) => exceptions.push(e.message));
+  await page.goto("/");
+  // A new tag from the sidebar, then onto the demo paper from its card.
+  await page.getByRole("button", { name: "新建技术标签" }).click();
+  await page.getByLabel("新标签名称").fill("动作块");
+  await page.keyboard.press("Enter");
+  const card = page.locator(".paper-card", { hasText: "Chunked Flow Policies" });
+  await card.getByRole("button", { name: /归类/ }).click();
+  await card.locator(".picker-tags label", { hasText: "动作块" }).click();
+  await expect(card.locator(".topic-tags")).toContainText("动作块");
+  await page.keyboard.press("Escape");
+  // Rename, then delete the tag everywhere.
+  page.once("dialog", (d) => void d.accept("动作分块"));
+  await page.locator(".side-row", { hasText: "动作块" }).hover();
+  await page.getByRole("button", { name: "重命名标签 动作块" }).click();
+  await expect(card.locator(".topic-tags")).toContainText("动作分块");
+  page.once("dialog", (d) => void d.accept());
+  await page.locator(".side-row", { hasText: "动作分块" }).hover();
+  await page.getByRole("button", { name: "删除标签 动作分块" }).click();
+  await expect(card.locator(".topic-tags")).not.toContainText("动作分块");
+  await expect(page.locator(".side-row", { hasText: "动作分块" })).toHaveCount(0);
+  // Delete the paper, then undo: it comes back with its research line.
+  await card.getByRole("button", { name: /归类/ }).click();
+  page.once("dialog", (d) => void d.accept());
+  await card.getByRole("button", { name: "从文献库删除" }).click();
+  await expect(page.locator(".paper-card", { hasText: "Chunked Flow Policies" })).toHaveCount(0);
+  await page.locator(".line-notice").getByRole("button", { name: "撤销" }).click();
+  await expect(page.locator(".paper-card", { hasText: "Chunked Flow Policies" })).toHaveCount(1);
+  const lines = (await (await request.get("/api/lines")).json()).lines;
+  expect(lines.find((l: { name: string }) => l.name === "测试研究线").papers.length).toBe(1);
+  // A research line can be edited or deleted straight from the sidebar.
+  await page.locator(".side-row", { hasText: "测试研究线" }).hover();
+  await page.getByRole("button", { name: "编辑研究线 测试研究线" }).click();
+  await expect(page.getByRole("dialog")).toContainText("编辑研究线");
+  await page.getByRole("dialog").getByRole("button", { name: "取消" }).click();
+  expect(exceptions).toEqual([]);
+});

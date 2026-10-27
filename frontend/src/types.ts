@@ -270,6 +270,8 @@ export type LineIdea = {
   updated_at: string;
   etag: string;
 };
+/** A technical tag in the library sidebar, with how many papers carry it. */
+export type TagView = { name: string; count: number };
 export type BackupStatus = {
   dir: string;
   auto: boolean;

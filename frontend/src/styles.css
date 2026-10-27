@@ -4322,3 +4322,106 @@ details summary > span {
 .auto-file-switch input {
   accent-color: var(--accent);
 }
+
+/* Sidebar rows with hover actions (edit / delete a research line or tag). */
+.side-row {
+  position: relative;
+}
+.side-row > .topic-nav {
+  width: 100%;
+}
+.side-row-actions {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  display: none;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-sunk);
+}
+.side-row:hover .side-row-actions,
+.side-row:focus-within .side-row-actions {
+  display: flex;
+}
+.side-row:hover > .topic-nav small {
+  visibility: hidden;
+}
+.side-row-actions button {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  color: var(--muted);
+}
+.side-row-actions button:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.side-row-actions button[aria-label^="删除"]:hover {
+  color: var(--danger);
+}
+.side-new-tag {
+  margin: 2px 11px 6px;
+  padding: 5px 9px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--panel);
+  color: var(--text);
+  font-size: 13px;
+  outline: 0;
+}
+/* Tags and delete inside the card's 归类 popover. */
+.line-picker-pop {
+  max-height: min(70vh, 560px);
+  overflow-y: auto;
+}
+.picker-section {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.picker-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 4px 0 6px;
+}
+.line-picker-pop .picker-tags label {
+  display: inline-flex;
+  gap: 4px;
+  padding: 2px 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 12px;
+}
+.line-picker-pop .picker-tags label.on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+.line-picker-pop .picker-tags input {
+  display: none;
+}
+.picker-new-tag {
+  width: 100%;
+  padding: 5px 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 12.5px;
+}
+.picker-delete {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 7px 4px 2px;
+  border-top: 1px solid var(--border);
+  color: var(--danger);
+  font-size: 12.5px;
+}

@@ -79,7 +79,9 @@ def suggest(root: Path, meta: Metadata) -> dict:
             other = r["key"].split("/")
             other_meta = read_json(paper_dir(root, other[0], other[1]) / "metadata.json")
             topics += [t for t in other_meta.get("topics", []) if t not in topics]
-    return {"lines": scored, "topics": topics[:3]}
+    from .library_admin import tag_list
+    allowed = set(tag_list(root))
+    return {"lines": scored, "topics": [t for t in topics if t in allowed][:3]}
 
 
 def evidence(s: dict) -> str:

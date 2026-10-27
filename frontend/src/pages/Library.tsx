@@ -12,6 +12,7 @@ import {
   List,
   Milestone,
   Network,
+  Pencil,
   Paperclip,
   Plus,
   RefreshCw,
@@ -21,7 +22,7 @@ import {
   X,
 } from "lucide-react";
 import { api, base, readLocal, USER_NAME, writeLocal } from "../api";
-import type { BackupStatus, LineIdea, Paper, ResearchLine, StudyOverview, StudySummary } from "../types";
+import type { BackupStatus, LineIdea, Paper, ResearchLine, StudyOverview, StudySummary, TagView } from "../types";
 import Modal from "../components/Modal";
 import CardBrief from "../features/library/CardBrief";
 import KnowledgeGraph from "../features/library/KnowledgeGraph";
@@ -67,17 +68,6 @@ export const ideaStatusLabel = {
   parked: "暂缓",
   dropped: "放弃",
 };
-const TOPICS = [
-  "VLA",
-  "World Model",
-  "Diffusion / Flow Matching",
-  "视频生成",
-  "推理加速",
-  "LLM 推理与 RL",
-  "Transformer / LLM / VLM",
-  "具身机器人",
-  "计算机视觉",
-];
 const lineKind = { idea: "Idea", direction: "方向" };
 /** Library orderings; "default" is the line's reading order, or most recently opened for the whole library. */
 const SORTS = {
@@ -144,6 +134,10 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
     [lineDialog, setLineDialog] = useState<null | "new" | ResearchLine>(null),
     [lineNotice, setLineNotice] = useState(""),
     [autoFile, setAutoFile] = useState(true),
+    [tags, setTags] = useState<TagView[]>([]),
+    [addingTag, setAddingTag] = useState(false),
+    [tagDraft, setTagDraft] = useState(""),
+    [removed, setRemoved] = useState<{ paper: Paper; trash: string } | null>(null),
     // One choice per view (whole library, each research line), remembered in this browser.
     [sorts, setSorts] = useState<Record<string, Sort>>(() => readLocal(SORT_KEY, {})),
     [backup, setBackup] = useState<BackupStatus | null>(null),
@@ -172,6 +166,9 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
           setLines(r.lines);
           setAutoFile(r.auto_file);
         })
+        .catch(() => {});
+      api<{ tags: TagView[] }>("/api/tags")
+        .then((r) => setTags(r.tags))
         .catch(() => {});
       api<{ ideas: LineIdea[] }>("/api/ideas")
         .then((r) => setIdeas(r.ideas))
@@ -241,6 +238,55 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
     await membership("PUT", to, p);
     await membership("DELETE", from, p);
   };
+  const tagAction = async (path: string, body: object) => {
+    try {
+      const r = await api<{ tags: TagView[] }>(path, { method: "POST", body: JSON.stringify(body) });
+      setTags(r.tags);
+      void load(); // papers' tags may have changed too
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  };
+  const addTag = () => {
+    const name = tagDraft.trim();
+    setTagDraft("");
+    setAddingTag(false);
+    if (name) void tagAction("/api/tags", { name });
+  };
+  const renameTag = (name: string) => {
+    const next = window.prompt(`把标签「${name}」改名为：`, name)?.trim();
+    if (next && next !== name) {
+      void tagAction("/api/tags/rename", { old: name, new: next });
+      if (topic === name) setTopic(next);
+    }
+  };
+  const deleteTag = (name: string) => {
+    const n = papers.filter((p) => p.topics.includes(name)).length;
+    if (!window.confirm(`删除标签「${name}」？${n ? `会从 ${n} 篇论文上移除，论文本身不受影响。` : ""}`)) return;
+    void tagAction("/api/tags/delete", { name });
+    if (topic === name) setTopic("");
+  };
+  const deletePaper = async (p: Paper) => {
+    if (!window.confirm(`从文献库删除「${displayTitle(p.title)}」？\n报告、笔记和学习记录会一起移到回收站，可以撤销。`)) return;
+    try {
+      const r = await api<{ trash_id: string }>(base(p.paper_id, p.version), { method: "DELETE" });
+      setPapers((list) => list.filter((x) => x !== p));
+      setRemoved({ paper: p, trash: r.trash_id });
+      void load();
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  };
+  const restorePaper = async () => {
+    if (!removed) return;
+    try {
+      await api(`/api/papers/restore/${removed.trash}`, { method: "POST" });
+      setRemoved(null);
+      void load();
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  };
   const switchAutoFile = async (enabled: boolean) => {
     try {
       const r = await api<{ auto_file: boolean }>("/api/lines/auto-file", { method: "PUT", body: JSON.stringify({ enabled }) });
@@ -278,7 +324,7 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
       setBackingUp(false);
     }
   };
-  const topics = [...new Set([...TOPICS, ...papers.flatMap((p) => p.topics)])];
+  const topics = [...new Set([...tags.map((t) => t.name), ...papers.flatMap((p) => p.topics)])];
   const summary = (p: Paper): StudySummary | undefined =>
     study.papers[`${p.paper_id}/${p.version}`];
   const recentPaper = useMemo(
@@ -397,8 +443,8 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
               </button>
             )}
             {lines.map((l) => (
+              <div className="side-row" key={l.id}>
               <button
-                key={l.id}
                 className={`topic-nav line-nav ${line === l.id ? "selected" : ""}`}
                 title={l.question}
                 onClick={() => {
@@ -417,6 +463,15 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
                   {l.papers.some((x) => x.auto) && <i className="line-auto-count">· {l.papers.filter((x) => x.auto).length} 待确认</i>}
                 </small>
               </button>
+              <span className="side-row-actions">
+                <button aria-label={`编辑研究线 ${l.name}`} title="编辑" onClick={() => setLineDialog(l)}>
+                  <Pencil size={13} />
+                </button>
+                <button aria-label={`删除研究线 ${l.name}`} title="删除" onClick={() => void deleteLine(l)}>
+                  <X size={14} />
+                </button>
+              </span>
+              </div>
             ))}
             {(unfiled.length > 0 || line === UNFILED) && (
               <button
@@ -444,8 +499,33 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
           </>
         )}
         <div className="side-section-title">
-          技术标签 <span>{topics.length}</span>
+          技术标签
+          <span className="side-section-tools">
+            {topics.length}
+            <button className="side-add" aria-label="新建技术标签" title="新建技术标签" onClick={() => setAddingTag(true)}>
+              <Plus size={14} />
+            </button>
+          </span>
         </div>
+        {addingTag && (
+          <input
+            className="side-new-tag"
+            aria-label="新标签名称"
+            autoFocus
+            maxLength={40}
+            value={tagDraft}
+            placeholder="标签名，回车保存"
+            onChange={(e) => setTagDraft(e.target.value)}
+            onBlur={addTag}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.nativeEvent.isComposing) addTag();
+              if (e.key === "Escape") {
+                setTagDraft("");
+                setAddingTag(false);
+              }
+            }}
+          />
+        )}
         <button
           className={`topic-nav ${!topic && !line ? "selected" : ""}`}
           onClick={() => {
@@ -457,8 +537,8 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
           全部论文
         </button>
         {topics.map((t, i) => (
+          <div className="side-row" key={t}>
           <button
-            key={t}
             className={`topic-nav ${topic === t ? "selected" : ""}`}
             onClick={() => {
               setTopic(t);
@@ -472,6 +552,15 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
               {papers.filter((p) => p.topics.includes(t)).length || ""}
             </small>
           </button>
+          <span className="side-row-actions">
+            <button aria-label={`重命名标签 ${t}`} title="重命名" onClick={() => renameTag(t)}>
+              <Pencil size={13} />
+            </button>
+            <button aria-label={`删除标签 ${t}`} title="删除" onClick={() => deleteTag(t)}>
+              <X size={14} />
+            </button>
+          </span>
+          </div>
         ))}
         <div className="sidebar-bottom">
           <HardDrive size={16} />
@@ -721,6 +810,13 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
                 <small>按下面的顺序读；每张卡片写了这篇在这条线上的作用。</small>
               </section>
             )}
+            {removed && (
+              <div className="line-notice" role="status">
+                已把「{displayTitle(removed.paper.title)}」移到回收站
+                <button className="text-button" onClick={() => void restorePaper()}>撤销</button>
+                <button className="text-button" onClick={() => setRemoved(null)}>关闭</button>
+              </div>
+            )}
             {lineNotice && (
               <div className="line-notice" role="status">
                 {lineNotice}
@@ -869,7 +965,19 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
                           {analysisLabel[p.analysis_status]}
                         </span>
                         <CardBrief paper={p} lines={lines} />
-                        <LinePicker paper={p} lines={lines} onLines={setLines} onError={setError} />
+                        <LinePicker
+                          paper={p}
+                          lines={lines}
+                          tags={tags}
+                          onLines={setLines}
+                          onPaper={(next) => {
+                            setPapers((list) => list.map((x) => (x.paper_id === next.paper_id && x.version === next.version ? next : x)));
+                            api<{ tags: TagView[] }>("/api/tags").then((r) => setTags(r.tags)).catch(() => {});
+                          }}
+                          onTags={setTags}
+                          onDelete={(x) => void deletePaper(x)}
+                          onError={setError}
+                        />
                       </div>
                       <div className="card-actions">
                         <button

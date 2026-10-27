@@ -38,7 +38,7 @@ def included(root: Path):
                 # .write-*.tmp are atomic writes still in flight.
                 if path.is_file() and not path.name.startswith(".write-"):
                     yield path
-    for name in ("lines.json", "ideas.json"):
+    for name in ("lines.json", "ideas.json", "tags.json"):
         if (root / name).is_file():
             yield root / name
 
