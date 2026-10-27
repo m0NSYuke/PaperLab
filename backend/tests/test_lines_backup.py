@@ -82,3 +82,23 @@ def test_line_ideas_capture_score_compare_and_restore(tmp_path):
     status = client.post("/api/backup").json()
     with zipfile.ZipFile(tmp_path / ".runtime" / "backups" / status["last"]["file"]) as archive:
         assert "ideas.json" in archive.namelist()
+
+
+def test_two_libraries_sharing_a_backup_folder_keep_their_own_snapshots(tmp_path):
+    from app.backup import KEEP, Backups
+    shared = tmp_path / "backups"
+    mine, other = tmp_path / "mine", tmp_path / "other"
+    (mine / "memos").mkdir(parents=True)
+    note = mine / "memos" / "memo-0123456789ab.md"
+    mine_backups, other_backups = Backups(mine, shared), Backups(other, shared)
+    # An empty library writes nothing.
+    assert other_backups.snapshot() is None and not shared.exists()
+    for i in range(KEEP + 2):
+        note.write_text(f"想法 {i}", encoding="utf-8")
+        assert mine_backups.snapshot()
+    (other / "memos").mkdir(parents=True)
+    (other / "memos" / "memo-ba9876543210.md").write_text("另一台", encoding="utf-8")
+    other_backups.snapshot()
+    # Rotation in one library never deletes the other's snapshots.
+    assert len(mine_backups.snapshots()) == KEEP and len(other_backups.snapshots()) == 1
+    assert mine_backups.latest()["file"] != other_backups.latest()["file"]

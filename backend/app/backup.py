@@ -1,7 +1,8 @@
 """Automatic snapshots of everything the user wrote, so one bad write or disk mistake is recoverable.
 
 Each snapshot is one zip in the backup folder: PAPERLAB_BACKUP_DIR (environment or .env.local),
-default ~/PaperLab-backups so it sits off the data drive. The server takes one when it starts and
+default ~/PaperLab-backups so it sits off the data drive (shared folder, but each data directory
+keeps and rotates only its own tagged snapshots). The server takes one when it starts and
 every 24 hours while it runs, skips it when nothing changed, and keeps the newest KEEP.
 Included: papers/, memos/, concepts/, knowledge/, research-outputs/, lines.json, ideas.json and imported local
 PDFs (local-assets/local-*). arXiv PDFs and LaTeX can be downloaded again and stay out.
@@ -53,15 +54,18 @@ def fingerprint(files, root: Path) -> str:
 class Backups:
     def __init__(self, root: Path, folder: Path):
         self.root, self.folder = root, folder
+        # Several installs on one machine share the default folder; each data directory
+        # keeps and rotates only its own snapshots, tagged by a hash of its path.
+        self.tag = hashlib.sha256(str(root.resolve()).lower().encode()).hexdigest()[:8]
         self.error = ""
         self.lock = threading.Lock()
 
     def latest(self):
-        path = self.folder / "latest.json"
+        path = self.folder / f"latest-{self.tag}.json"
         return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
 
     def snapshots(self):
-        return sorted(self.folder.glob("paperlab-*.zip"))
+        return sorted(self.folder.glob(f"paperlab-{self.tag}-*.zip"))
 
     def status(self, auto: bool):
         last = self.latest()
@@ -74,14 +78,16 @@ class Backups:
         """Write a new zip unless nothing changed since the last one; returns its file name or None."""
         with self.lock:
             files = list(included(self.root))
+            if not files:
+                return None  # nothing written yet: an empty library needs no backup
             mark = fingerprint(files, self.root)
             last = self.latest()
             if last and last.get("fingerprint") == mark and (self.folder / last["file"]).exists():
                 return None
             self.folder.mkdir(parents=True, exist_ok=True)
-            for stale in self.folder.glob("*.partial"):
+            for stale in self.folder.glob(f"paperlab-{self.tag}-*.partial"):
                 stale.unlink()  # left by a server stopped mid-snapshot
-            name = f"paperlab-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S-%f')[:-3]}.zip"
+            name = f"paperlab-{self.tag}-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S-%f')[:-3]}.zip"
             partial = self.folder / (name + ".partial")
             count = 0
             with zipfile.ZipFile(partial, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as archive:
@@ -92,7 +98,7 @@ class Backups:
                     except FileNotFoundError:
                         continue  # removed while we were copying; the next snapshot reflects it
             os.replace(partial, self.folder / name)
-            atomic_write(self.folder / "latest.json", json.dumps(
+            atomic_write(self.folder / f"latest-{self.tag}.json", json.dumps(
                 {"file": name, "created_at": now(), "files": count, "bytes": (self.folder / name).stat().st_size,
                  "fingerprint": mark}, ensure_ascii=False, indent=2))
             for old in self.snapshots()[:-KEEP]:
