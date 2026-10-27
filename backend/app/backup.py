@@ -87,7 +87,10 @@ class Backups:
             self.folder.mkdir(parents=True, exist_ok=True)
             for stale in self.folder.glob(f"paperlab-{self.tag}-*.partial"):
                 stale.unlink()  # left by a server stopped mid-snapshot
-            name = f"paperlab-{self.tag}-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S-%f')[:-3]}.zip"
+            stamp = datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S-%f')[:-3]
+            name, n = f"paperlab-{self.tag}-{stamp}.zip", 1
+            while (self.folder / name).exists():  # two snapshots within one millisecond
+                name, n = f"paperlab-{self.tag}-{stamp}-{n}.zip", n + 1
             partial = self.folder / (name + ".partial")
             count = 0
             with zipfile.ZipFile(partial, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as archive:
