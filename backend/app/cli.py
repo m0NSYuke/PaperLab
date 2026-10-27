@@ -66,6 +66,11 @@ def main():
             meta = import_pdf(root, Path(ref).read_bytes(), Path(ref).name)
         else:
             meta = import_arxiv(root, ref)
+        try:
+            from .autofile import autofile
+            autofile(root, meta)
+        except Exception:
+            pass  # filing is a convenience; never block source preparation
         bundle, source_path = prepare_sources(root, meta.paper_id, meta.version)
         meta = Metadata.model_validate(read_json(paper_dir(root, meta.paper_id, meta.version) / "metadata.json"))
         print(json.dumps({"metadata": meta.model_dump(),

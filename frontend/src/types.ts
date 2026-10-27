@@ -220,7 +220,9 @@ export type ResearchLine = {
   kind: "idea" | "direction";
   question: string;
   status: string;
-  papers: { key: string; role: string; why: string }[];
+  keywords?: string[];
+  /** `auto`: filed automatically on import and not yet confirmed by the user. */
+  papers: { key: string; role: string; why: string; auto?: boolean }[];
 };
 /** A passage matched by the library-wide knowledge search. */
 export type KnowledgeHit = {

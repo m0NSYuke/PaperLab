@@ -81,3 +81,9 @@ Selection translation also listens to `selectionchange` on touch input (coarse p
 - Tradeoffs are four 1–5 scores (novelty, feasibility, impact, cost) plus pros, cons and a next step. The composite novelty + feasibility + impact − cost only orders ideas once all four are scored; it is not a verdict.
 - ideas.json is user data: included in backups and knowledge search, never written by report generation.
 
+## Automatic filing of imports (2026-10-27)
+
+- Every import (web and CLI prepare) files the paper into research lines unless a line already holds it: score = line keywords hit in the title (x3) or opening pages (x1) + 20 x content similarity to the line's papers. Lines at or above 3 points and within 70 % of the best are joined as `auto: true` entries with the evidence as `why`; otherwise the paper is listed under 未归入研究线. Empty technical tags are filled from keyword rules, else from the nearest papers. Filing never fails an import.
+- lines.json is now also written by the app (confirm, move, remove, automatic entries), always through data_lock and in a compact form that leaves defaults out so it stays hand-editable.
+- Checked against the 25 already-filed papers: all came out in their actual line.
+

@@ -20,7 +20,7 @@ import {
   Upload,
   X,
 } from "lucide-react";
-import { api, readLocal, USER_NAME, writeLocal } from "../api";
+import { api, base, readLocal, USER_NAME, writeLocal } from "../api";
 import type { BackupStatus, LineIdea, Paper, ResearchLine, StudyOverview, StudySummary } from "../types";
 import Modal from "../components/Modal";
 import CardBrief from "../features/library/CardBrief";
@@ -77,6 +77,8 @@ const TOPICS = [
   "计算机视觉",
 ];
 const lineKind = { idea: "Idea", direction: "方向" };
+/** Sidebar entry for papers that no research line holds yet. */
+const UNFILED = "__unfiled";
 const paperKey = (p: Paper) => `${p.paper_id}/${p.version}`;
 const backupTime = (iso: string) => {
   const d = new Date(iso);
@@ -156,6 +158,8 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
   }, [load]);
   const arxivMatch = query.trim().match(ARXIV);
   const activeLine = lines.find((l) => l.id === line);
+  const filedKeys = new Set(lines.flatMap((l) => l.papers.map((x) => x.key)));
+  const unfiled = papers.filter((p) => !filedKeys.has(paperKey(p)));
   const linePos = (p: Paper) =>
     activeLine ? activeLine.papers.findIndex((x) => x.key === paperKey(p)) : -1;
   const filtered = papers.filter(
@@ -170,6 +174,7 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
           )) &&
       (!topic || p.topics.includes(topic)) &&
       (!activeLine || linePos(p) >= 0) &&
+      (line !== UNFILED || !filedKeys.has(paperKey(p))) &&
       (!year || String(p.year) === year) &&
       (!status || p.reading_status === status) &&
       (view !== "recent" || p.last_opened_at),
@@ -180,6 +185,29 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
     setLine(id);
     setTopic("");
     if (view === "ideas" || view === "graph") setView("library");
+  };
+  const membership = async (method: "PUT" | "DELETE", lineId: string, p: Paper) => {
+    try {
+      const r = await api<{ lines: ResearchLine[] }>(`/api/lines/${lineId}/papers/${p.paper_id}/${p.version}`, {
+        method,
+        ...(method === "PUT" ? { body: "{}" } : {}),
+      });
+      setLines(r.lines);
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  };
+  const moveLine = async (from: string, to: string, p: Paper) => {
+    await membership("PUT", to, p);
+    await membership("DELETE", from, p);
+  };
+  const refile = async (p: Paper) => {
+    try {
+      await api(`${base(p.paper_id, p.version)}/autofile`, { method: "POST" });
+      void load();
+    } catch (e) {
+      setError((e as Error).message);
+    }
   };
   const backupNow = async () => {
     setBackingUp(true);
@@ -312,9 +340,27 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
                 <small title={`${l.papers.length} 篇论文 · ${ideas.filter((i) => i.line === l.id).length} 个 idea`}>
                   {l.papers.length}
                   {ideas.some((i) => i.line === l.id) && <i className="line-idea-count">· {ideas.filter((i) => i.line === l.id).length} idea</i>}
+                  {l.papers.some((x) => x.auto) && <i className="line-auto-count">· {l.papers.filter((x) => x.auto).length} 待确认</i>}
                 </small>
               </button>
             ))}
+            {(unfiled.length > 0 || line === UNFILED) && (
+              <button
+                className={`topic-nav line-nav unfiled ${line === UNFILED ? "selected" : ""}`}
+                title="导入时没有找到足够接近的研究线的论文"
+                onClick={() => {
+                  setFocusIdea(null);
+                  pickLine(line === UNFILED ? "" : UNFILED);
+                }}
+              >
+                <Milestone size={15} />
+                <span className="line-nav-name">
+                  未归入研究线
+                  <em>待你决定</em>
+                </span>
+                <small>{unfiled.length}</small>
+              </button>
+            )}
           </>
         )}
         <div className="side-section-title">
@@ -502,7 +548,7 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
             </div>
             <div className="library-heading">
               <h2>
-                {view === "recent" ? "最近阅读" : activeLine ? activeLine.name : "我的文献库"}
+                {view === "recent" ? "最近阅读" : activeLine ? activeLine.name : line === UNFILED ? "未归入研究线" : "我的文献库"}
                 <span className="count-pill">{filtered.length}</span>
               </h2>
               <div className="library-tools">
@@ -584,6 +630,14 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
                 <small>按下面的顺序读；每张卡片写了这篇在这条线上的作用。</small>
               </section>
             )}
+            {line === UNFILED && (
+              <section className="line-brief" aria-label="未归入说明">
+                <div className="line-brief-head">
+                  <span>未归入 · 待你决定</span>
+                </div>
+                <p>这些论文导入时没有和任何研究线足够接近。给它选一条研究线，或在 lines.json 里给研究线补几个关键词后点「重新自动归类」。</p>
+              </section>
+            )}
             {activeLine && (
               <IdeaBoard
                 key={activeLine.id}
@@ -647,7 +701,7 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
                     </div>
                     <h2>{displayTitle(p.title)}</h2>
                     {activeLine && activeLine.papers[linePos(p)] && (
-                      <div className="line-role">
+                      <div className={`line-role ${activeLine.papers[linePos(p)].auto ? "auto" : ""}`}>
                         <b>{linePos(p) + 1}</b>
                         <div>
                           <strong>{activeLine.papers[linePos(p)].role}</strong>
@@ -679,6 +733,38 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
                     </div>
                     <StudyMeter paper={p} summary={summary(p)} />
                     </button>
+                    {activeLine && activeLine.papers[linePos(p)]?.auto && (
+                      <div className="auto-file-bar">
+                        <span>导入时自动归入这里</span>
+                        <button className="confirm" onClick={() => void membership("PUT", activeLine.id, p)}>确认</button>
+                        <select
+                          aria-label="改到其他研究线"
+                          value=""
+                          onChange={(e) => e.target.value && void moveLine(activeLine.id, e.target.value, p)}
+                        >
+                          <option value="">改到…</option>
+                          {lines.filter((l) => l.id !== activeLine.id).map((l) => (
+                            <option key={l.id} value={l.id}>{l.name}</option>
+                          ))}
+                        </select>
+                        <button onClick={() => void membership("DELETE", activeLine.id, p)}>移出</button>
+                      </div>
+                    )}
+                    {line === UNFILED && (
+                      <div className="auto-file-bar">
+                        <select
+                          aria-label="归入研究线"
+                          value=""
+                          onChange={(e) => e.target.value && void membership("PUT", e.target.value, p)}
+                        >
+                          <option value="">归入研究线…</option>
+                          {lines.map((l) => (
+                            <option key={l.id} value={l.id}>{l.name}</option>
+                          ))}
+                        </select>
+                        <button onClick={() => void refile(p)}>重新自动归类</button>
+                      </div>
+                    )}
                     <div className="card-footer">
                       <div className="card-footer-left">
                         <span className={`analysis-badge ${p.analysis_status}`}>

@@ -137,7 +137,7 @@ def create_app(root: Path | None = None, lan_token: str | None = None, app_root:
 
     @app.post("/api/import/arxiv")
     def arxiv_import(body: ImportInput):
-        return import_arxiv(root, body.reference)
+        return filed(import_arxiv(root, body.reference))
 
     @app.post("/api/import/pdf")
     async def pdf_import(file: UploadFile = File(), title: str = Form("")):
@@ -145,7 +145,21 @@ def create_app(root: Path | None = None, lan_token: str | None = None, app_root:
         await file.close()
         if len(raw) > MAX_BYTES:
             raise HTTPException(413, "PDF 超过 100 MB")
-        return import_pdf(root, raw, file.filename or "paper.pdf", title)
+        return filed(import_pdf(root, raw, file.filename or "paper.pdf", title))
+
+    def filed(meta: Metadata) -> Metadata:
+        """File a fresh import into research lines and tags; a filing problem never fails the import."""
+        try:
+            from .autofile import autofile
+            autofile(root, meta)
+            return get_meta(meta.paper_id, meta.version)
+        except Exception:
+            return meta
+
+    @app.post("/api/papers/{paper_id}/{version}/autofile")
+    def paper_autofile(paper_id: str, version: str):
+        from .autofile import autofile
+        return autofile(root, get_meta(paper_id, version), force=True)
 
     @app.get("/api/papers/{paper_id}/{version}")
     def paper(paper_id: str, version: str):
