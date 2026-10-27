@@ -94,7 +94,8 @@ def test_two_libraries_sharing_a_backup_folder_keep_their_own_snapshots(tmp_path
     # An empty library writes nothing.
     assert other_backups.snapshot() is None and not shared.exists()
     for i in range(KEEP + 2):
-        note.write_text(f"想法 {i}", encoding="utf-8")
+        # A different length each time: coarse file timestamps (Linux CI) must not hide the change.
+        note.write_text("想法" * (i + 1), encoding="utf-8")
         assert mine_backups.snapshot()
     (other / "memos").mkdir(parents=True)
     (other / "memos" / "memo-ba9876543210.md").write_text("另一台", encoding="utf-8")
