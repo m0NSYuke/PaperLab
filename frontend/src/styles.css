@@ -3494,3 +3494,258 @@ details summary > span {
 .live-tail.empty {
   padding: 4px 0;
 }
+
+/* Knowledge search: passages from reports, notes, 随记 and concept cards. */
+.knowledge-hits {
+  margin: 28px 0 8px;
+}
+.knowledge-hits-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.knowledge-hits-head h3 {
+  font-size: 17px;
+  font-weight: 600;
+}
+.knowledge-hits-head span {
+  font-size: 12.5px;
+  color: var(--faint);
+}
+.knowledge-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 12px;
+}
+.knowledge-group {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+.knowledge-source {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  color: var(--muted);
+}
+.knowledge-source strong {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.knowledge-source em {
+  font-style: normal;
+  font-size: 11.5px;
+  color: var(--faint);
+  margin-left: auto;
+}
+.knowledge-hit {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 7px 8px;
+  margin: 0 -8px;
+  border-radius: var(--radius-sm);
+}
+.knowledge-hit:hover {
+  background: var(--hover);
+}
+.knowledge-meta {
+  display: block;
+  font-size: 11.5px;
+  color: var(--faint);
+}
+.knowledge-meta b {
+  font-weight: 600;
+  color: var(--accent);
+}
+.knowledge-snippet {
+  display: block;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+.knowledge-snippet mark {
+  background: var(--accent-soft);
+  color: var(--text);
+  border-radius: 3px;
+  padding: 0 1px;
+}
+
+/* Knowledge graph view. */
+.knowledge-graph {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.graph-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.graph-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+.graph-chip i {
+  width: 16px;
+  height: 0;
+  border-top: 2px solid var(--muted);
+}
+.graph-chip.off {
+  opacity: 0.45;
+}
+.graph-chip.edge-in_line i {
+  border-color: var(--accent);
+}
+.graph-chip.edge-uses i {
+  border-color: var(--border-strong);
+}
+.graph-chip.edge-relation i {
+  border-color: var(--text-2);
+}
+.graph-chip.edge-compares i {
+  border-top-style: dashed;
+  border-color: var(--warn);
+}
+.graph-chip.edge-similar i {
+  border-top-style: dotted;
+  border-color: var(--info);
+}
+.graph-hint {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--faint);
+}
+.graph-stage {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel);
+  overflow: hidden;
+}
+.graph-stage svg {
+  display: block;
+  width: 100%;
+  height: min(76vh, 760px);
+}
+.graph-edge {
+  stroke: var(--border-strong);
+  stroke-width: 1;
+  transition: opacity 0.15s;
+}
+.graph-edge.edge-in_line {
+  stroke: var(--accent);
+  stroke-width: 1.4;
+  opacity: 0.55;
+}
+.graph-edge.edge-relation {
+  stroke: var(--text-2);
+  stroke-width: 1.3;
+}
+.graph-edge.edge-compares {
+  stroke: var(--warn);
+  stroke-dasharray: 5 4;
+  stroke-width: 1.3;
+}
+.graph-edge.edge-similar {
+  stroke: var(--info);
+  stroke-dasharray: 2 4;
+}
+.graph-edge.dim,
+.graph-node.dim {
+  opacity: 0.12;
+}
+.graph-node {
+  cursor: default;
+  transition: opacity 0.15s;
+}
+.graph-node text {
+  font-size: 11px;
+  fill: var(--text-2);
+  paint-order: stroke;
+  stroke: var(--panel);
+  stroke-width: 3px;
+}
+.graph-node.node-paper {
+  cursor: pointer;
+}
+.graph-node.node-paper circle {
+  fill: var(--panel);
+  stroke: var(--muted);
+  stroke-width: 2;
+}
+.graph-node.node-paper.ready circle {
+  fill: var(--clay);
+  stroke: var(--accent-strong);
+}
+.graph-node.node-concept rect {
+  fill: var(--ok);
+}
+.graph-node.node-concept text {
+  font-size: 10px;
+  fill: var(--muted);
+}
+.graph-node.node-line rect {
+  fill: var(--soft);
+  stroke: var(--muted);
+}
+.graph-node.node-line.idea rect {
+  fill: var(--accent-soft);
+  stroke: var(--accent);
+}
+.graph-node.node-line text {
+  font-size: 13px;
+  font-weight: 600;
+  fill: var(--text);
+}
+.graph-detail {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: min(300px, 70%);
+  padding: 12px 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  font-size: 12.5px;
+  pointer-events: none;
+}
+.graph-detail strong {
+  display: block;
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+.graph-detail > span {
+  color: var(--faint);
+  font-size: 11.5px;
+}
+.graph-detail ul {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.graph-detail li {
+  padding: 2px 0;
+  color: var(--text-2);
+}
+.graph-detail li em {
+  font-style: normal;
+  color: var(--faint);
+  margin-right: 6px;
+}

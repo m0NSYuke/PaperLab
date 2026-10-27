@@ -22,6 +22,10 @@ def main():
     p = commands.add_parser("index")
     p.add_argument("paper_id")
     p.add_argument("--version", required=True)
+    p = commands.add_parser("related", help="library papers closest to this one, for cross-paper comparison")
+    p.add_argument("paper_id")
+    p.add_argument("--version", required=True)
+    p.add_argument("-k", type=int, default=8)
     commands.add_parser("schemas")
     args = parser.parse_args()
     root = args.root.absolute()
@@ -29,6 +33,20 @@ def main():
         for name, model in [("metadata", Metadata), ("report", Report), ("correction", Correction),
                             ("research-input", ResearchInput), ("research-result", DraftResult), ("research-edit", DraftEdit)]:
             write_json(APP_ROOT / "docs" / "schemas" / f"{name}.schema.json", model.model_json_schema())
+    elif args.command == "related":
+        from .knowledge import Knowledge
+        knowledge = Knowledge(root)
+        key = f"{args.paper_id}/{args.version}"
+        text = None
+        report = paper_dir(root, args.paper_id, args.version) / "report.json"
+        if not report.exists():
+            # No report yet: compare by the first pages of the paper itself.
+            pages = paper_dir(root, args.paper_id, args.version, True) / "pages.json"
+            text = " ".join(p["text"] for p in read_json(pages)["pages"][:3]) if pages.exists() else ""
+        rows = knowledge.related(key, args.k, text)
+        for row in rows:
+            row["report"] = str(paper_dir(root, *row["key"].split("/")) / "report.json")
+        print(json.dumps(rows, ensure_ascii=False, indent=2))
     elif args.command == "index":
         with data_lock(root):
             folder = paper_dir(root, args.paper_id, args.version)

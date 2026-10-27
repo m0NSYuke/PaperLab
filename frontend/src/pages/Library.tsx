@@ -11,6 +11,7 @@ import {
   Lightbulb,
   List,
   Milestone,
+  Network,
   Paperclip,
   Plus,
   RefreshCw,
@@ -23,6 +24,8 @@ import { api, readLocal, USER_NAME, writeLocal } from "../api";
 import type { BackupStatus, Paper, ResearchLine, StudyOverview, StudySummary } from "../types";
 import Modal from "../components/Modal";
 import CardBrief from "../features/library/CardBrief";
+import KnowledgeGraph from "../features/library/KnowledgeGraph";
+import KnowledgeHits from "../features/library/KnowledgeHits";
 import { useCommands, type CommandSource } from "../components/CommandPalette";
 const GREEK: Record<string, string> = {
   alpha: "α", beta: "β", gamma: "γ", delta: "δ", epsilon: "ε", lambda: "λ",
@@ -81,7 +84,7 @@ const backupTime = (iso: string) => {
 };
 const ARXIV =
   /^(?:https?:\/\/(?:www\.)?arxiv\.org\/(?:abs|pdf)\/)?(\d{4}\.\d{4,5}(?:v\d+)?)(?:\.pdf)?\/?$/i;
-type View = "library" | "recent" | "ideas";
+type View = "library" | "recent" | "ideas" | "graph";
 const greeting = () => {
   const h = new Date().getHours();
   return h < 5
@@ -99,7 +102,7 @@ export function openOnTab(p: Paper, tab: string) {
   const key = `paperlab.reader.${p.paper_id}.${p.version}`;
   writeLocal(key, { ...readLocal(key, {}), tab });
 }
-export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study") => void }) {
+export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study", page?: number) => void }) {
   const [papers, setPapers] = useState<Paper[]>([]),
     [study, setStudy] = useState<StudyOverview>({ papers: {}, ideas: [] }),
     [warnings, setWarnings] = useState<string[]>([]),
@@ -170,7 +173,7 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
   const pickLine = (id: string) => {
     setLine(id);
     setTopic("");
-    if (view === "ideas") setView("library");
+    if (view === "ideas" || view === "graph") setView("library");
   };
   const backupNow = async () => {
     setBackingUp(true);
@@ -272,6 +275,13 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
             <Lightbulb size={17} />
             想法本 <span>{study.ideas.length}</span>
           </button>
+          <button
+            className={view === "graph" ? "active" : ""}
+            onClick={() => setView("graph")}
+          >
+            <Network size={17} />
+            知识图谱
+          </button>
         </nav>
         {lines.length > 0 && (
           <>
@@ -315,7 +325,7 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
             onClick={() => {
               setTopic(t);
               setLine("");
-              if (view === "ideas") setView("library");
+              if (view === "ideas" || view === "graph") setView("library");
             }}
           >
             <span className={`topic-dot color-${i % 4}`} />
@@ -446,7 +456,9 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
             </span>
           </button>
         )}
-        {view === "ideas" ? (
+        {view === "graph" ? (
+          <KnowledgeGraph papers={papers} onOpen={(p) => onOpen(p)} />
+        ) : view === "ideas" ? (
           <IdeasView
             overview={study}
             papers={papers}
@@ -570,7 +582,9 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
                   {arxivMatch
                     ? "文献库里还没有这篇，按 Enter 直接导入。"
                     : papers.length
-                      ? "试试其他关键词或调整筛选条件。"
+                      ? query.trim().length >= 2
+                        ? "标题、作者和标签里没有匹配；下面是知识库里提到它的内容。"
+                        : "试试其他关键词或调整筛选条件。"
                       : "在上方粘贴 arXiv 链接，或上传本地 PDF。"}
                 </p>
                 {!arxivMatch && (
@@ -669,6 +683,7 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
                 ))}
               </div>
             )}
+            <KnowledgeHits query={query} papers={papers} onOpen={onOpen} />
             <div className="library-help">
               <Terminal size={18} />
               <div>

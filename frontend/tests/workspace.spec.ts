@@ -417,3 +417,22 @@ test("library card 自测与思考 opens the paper straight at its self-test", a
   await expect.poll(() => page.url().endsWith(`#/paper/${demo.id}/${demo.version}`)).toBe(true);
   expect(exceptions).toEqual([]);
 });
+
+test("knowledge search finds report passages and opens the paper at the cited page; graph view renders", async ({ page }) => {
+  const exceptions: string[] = [];
+  page.on("pageerror", (e) => exceptions.push(e.message));
+  await page.goto("/");
+  await page.getByLabel("搜索文献").fill("欧拉积分");
+  const hits = page.locator(".knowledge-hits");
+  await expect(hits).toBeVisible();
+  const claim = hits.locator(".knowledge-hit", { hasText: "推理时用 10 步欧拉积分" });
+  await expect(claim).toContainText("p.");
+  const cited = Number((await claim.locator(".knowledge-meta").innerText()).match(/p\.(\d+)/)![1]);
+  await claim.click();
+  await expect.poll(() => page.url()).toContain(`page=${cited}`);
+  await expect(page.getByLabel("PDF 页码")).toHaveValue(String(cited), { timeout: 30000 });
+  await page.goto("/");
+  await page.getByRole("button", { name: "知识图谱" }).click();
+  await expect(page.locator(".knowledge-graph .graph-node.node-paper").first()).toBeVisible();
+  expect(exceptions).toEqual([]);
+});

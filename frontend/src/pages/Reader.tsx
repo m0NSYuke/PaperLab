@@ -61,12 +61,15 @@ export default function Reader({
   onBack,
   onDirtyChange,
   initialFocus,
+  initialPage,
 }: {
   paper: Paper;
   onBack: () => void;
   onDirtyChange: (dirty: boolean) => void;
   /** Open on the Study tab at the self-test, e.g. from the library card's 自测与思考. */
   initialFocus?: "study";
+  /** Opened from a knowledge-search hit: start at the cited page. */
+  initialPage?: number;
 }) {
   const paperTone = usePaperTone();
   const [paper, setPaper] = useState(initial),
@@ -77,7 +80,11 @@ export default function Reader({
   const key = `paperlab.reader.${paper.paper_id}.${paper.version}`;
   const [state, setState] = useState<ReadingState>(() => {
       const saved = { ...DEFAULT, ...readLocal(key, DEFAULT) };
-      return { ...saved, tab: initialFocus === "study" ? "study" : normalizeTab(saved.tab) };
+      return {
+        ...saved,
+        page: initialPage ?? saved.page,
+        tab: initialFocus === "study" ? "study" : normalizeTab(saved.tab),
+      };
     }),
     [citation, setCitation] = useState<{
       value: Citation;

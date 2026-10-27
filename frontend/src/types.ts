@@ -222,6 +222,33 @@ export type ResearchLine = {
   status: string;
   papers: { key: string; role: string; why: string }[];
 };
+/** A passage matched by the library-wide knowledge search. */
+export type KnowledgeHit = {
+  kind: "claim" | "report" | "equation" | "tutorial" | "note" | "memo" | "concept";
+  kind_label: string;
+  paper: string | null;
+  memo: string | null;
+  concept: string | null;
+  title: string;
+  label: string;
+  page: number | null;
+  snippet: string;
+  score: number;
+};
+export type GraphNode = {
+  id: string;
+  type: "paper" | "concept" | "line";
+  label: string;
+  key?: string;
+  kind?: string;
+  analysis_status?: string;
+};
+export type GraphEdge = {
+  source: string;
+  target: string;
+  type: "uses" | "in_line" | "relation" | "compares" | "similar";
+  label: string;
+};
 export type BackupStatus = {
   dir: string;
   auto: boolean;

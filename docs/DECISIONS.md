@@ -68,3 +68,10 @@ Selection translation also listens to `selectionchange` on touch input (coarse p
 - The server backs up user-written data as rotating zips outside the data drive (`PAPERLAB_BACKUP_DIR`, default `~/PaperLab-backups`, keep 10, skip when unchanged). Re-downloadable arXiv PDFs and LaTeX are excluded; imported local PDFs are included. The backup thread starts with the server, never on import.
 - Concept cards are linked from each report's `concept_links` and shown first in the 精读 background chapter by their display names.
 
+## Library knowledge search and graph (2026-10-26)
+
+- Borrowed from paperwise (HJCheng0602/paperwise): a library-wide knowledge base, a paper–concept graph and related-paper context while writing reports. Not borrowed: whole-paper bilingual PDF translation (removed earlier by choice) and per-section independent model calls (PaperLab reports are written in one pass by the agent).
+- Search is local BM25 over report prose, claims (with PDF page), equations, tutorial units, notes, 随记 and concept cards; Latin words plus CJK character bigrams, no embeddings or model calls. The index rebuilds only when a source file's mtime or size changes (backend/app/knowledge.py).
+- The graph uses only what the library states (concept_links, related_papers matched to library titles, local_report comparison rows, lines.json) plus TF-IDF report similarity. Concept and similarity edges are off by default because hub concepts collapse the layout.
+- `paper.py related ID --version vN` lists the closest library papers for the paper skill's cross-paper comparison step; it falls back to the paper's first pages before a report exists.
+

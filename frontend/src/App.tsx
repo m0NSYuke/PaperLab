@@ -76,10 +76,13 @@ export default function App() {
     window.addEventListener("hashchange", route);
     return () => window.removeEventListener("hashchange", route);
   }, []);
-  /** `focus: "study"` opens the paper straight at its self-test and reflections. */
-  const open = (p: Paper, focus?: "study") => {
+  /** `focus: "study"` opens the paper straight at its self-test and reflections; `page` at a PDF page. */
+  const open = (p: Paper, focus?: "study", page?: number) => {
     setPaper(p);
-    location.hash = `/paper/${encodeURIComponent(p.paper_id)}/${p.version}${focus ? `?focus=${focus}` : ""}`;
+    const query = new URLSearchParams();
+    if (focus) query.set("focus", focus);
+    if (page) query.set("page", String(page));
+    location.hash = `/paper/${encodeURIComponent(p.paper_id)}/${p.version}${query.toString() ? `?${query}` : ""}`;
   };
   const globalSource = useMemo<CommandSource>(
     () => ({
@@ -190,6 +193,7 @@ export default function App() {
             key={paper.paper_id + paper.version}
             paper={paper}
             initialFocus={params.get("focus") === "study" ? "study" : undefined}
+            initialPage={Number(params.get("page")) || undefined}
             onBack={() => {
               location.hash = "/";
               setPaper(null);

@@ -374,6 +374,8 @@ def create_app(root: Path | None = None, lan_token: str | None = None, app_root:
     register_memos(app, root)
     from .lines import register_lines
     register_lines(app, root)
+    from .knowledge import register_knowledge
+    register_knowledge(app, root)
     from .backup import default_dir, register_backup
     register_backup(app, root, default_dir() if production else root / ".runtime" / "backups", auto=production)
     # One local production server. API routes are registered before SPA fallback.
