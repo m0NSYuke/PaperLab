@@ -1,8 +1,8 @@
 # PaperLab
 
-**读懂论文，而不只是读完。** 一个在自己电脑上运行的 AI 科研论文阅读工作台：左边看原文 PDF，右边看有出处可查的中文讲解，选中英文即可离线翻译，读完用自测题和研究判断检验自己是否真的懂了。
+**简体中文** | [English](README.en.md)
 
-*A local-first research-paper reading workspace: PDF and a source-verified Chinese explanation side by side, offline selection translation on your own GPU, and a study layer (three-pass reading route, self-tests, research judgment, idea notebook) that turns reading into understanding. Reports are written by your coding agent (Claude Code `/paper` or Codex `$paper`) and validated quote by quote before they reach the reader.*
+**读懂论文，而不只是读完。** 一个在自己电脑上运行的 AI 科研论文阅读工作台：左边看原文 PDF，右边看有出处可查的中文讲解，选中英文即可离线翻译，读完用自测题和研究判断检验自己是否真的懂了。
 
 [![CI](https://github.com/m0NSYuke/PaperLab/actions/workflows/ci.yml/badge.svg)](https://github.com/m0NSYuke/PaperLab/actions/workflows/ci.yml)
 ![License: MIT](https://img.shields.io/badge/license-MIT-c6613f)
@@ -122,7 +122,7 @@ python scripts\verify-nature-skills.py       # 可选：再次核验
 
 - 所有论文、报告、笔记和学习记录都是本机普通文件（JSON / Markdown），默认在项目文件夹里且被 Git 忽略；可用 `.env.local` 的 `PAPERLAB_DATA_DIR` 放到其他磁盘。
 - 服务只绑定 127.0.0.1（局域网模式需口令）。网页本身不调用任何模型 API，也不需要 API Key；Codex 工作台调用的是你本机已登录的 Codex CLI，划词翻译完全离线。
-- 自动备份：服务启动时和运行期间每 24 小时，把你写的所有东西（papers/、memos/、concepts/、knowledge/、research-outputs/、lines.json 和导入的本地 PDF）打成一个 zip，放到 `PAPERLAB_BACKUP_DIR`（默认 `~/PaperLab-backups`，与数据盘分开；同一台电脑上的多份 PaperLab 各自只管理自己的备份），没有变化就跳过，保留最近 10 份。文献库左下角显示上次备份时间，也可以「立即备份」。arXiv 的 PDF 与 LaTeX 可以重新下载，不进备份。恢复时把 zip 解压回数据目录即可。
+- 自动备份：服务启动时和运行期间每 24 小时，把你写的所有东西（papers/、memos/、concepts/、knowledge/、research-outputs/、lines.json、ideas.json 和导入的本地 PDF）打成一个 zip，放到 `PAPERLAB_BACKUP_DIR`（默认 `~/PaperLab-backups`，与数据盘分开；同一台电脑上的多份 PaperLab 各自只管理自己的备份），没有变化就跳过，保留最近 10 份。文献库左下角显示上次备份时间，也可以「立即备份」。arXiv 的 PDF 与 LaTeX 可以重新下载，不进备份。恢复时把 zip 解压回数据目录即可。
 
 ```text
 <数据目录>/
