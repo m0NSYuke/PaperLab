@@ -1,5 +1,5 @@
 import { Suspense, lazy, useEffect, useState } from "react";
-import { BookOpen, FileText, NotebookPen } from "lucide-react";
+import { BookOpen, FileText, Lightbulb, NotebookPen } from "lucide-react";
 import { api } from "../../api";
 import type { KnowledgeHit, Paper } from "../../types";
 import Modal from "../../components/Modal";
@@ -7,7 +7,7 @@ import { displayTitle } from "../../pages/Library";
 
 const Markdown = lazy(() => import("../../components/Markdown"));
 
-type Group = { id: string; title: string; kind: "paper" | "memo" | "concept"; hits: KnowledgeHit[] };
+type Group = { id: string; title: string; kind: "paper" | "memo" | "concept" | "idea"; hits: KnowledgeHit[] };
 
 /** Highlight each query term inside a snippet, case-insensitively. */
 function Marked({ text, query }: { text: string; query: string }) {
@@ -25,10 +25,12 @@ export default function KnowledgeHits({
   query,
   papers,
   onOpen,
+  onIdea,
 }: {
   query: string;
   papers: Paper[];
   onOpen: (p: Paper, focus?: "study", page?: number) => void;
+  onIdea: (line: string, id: string) => void;
 }) {
   const [hits, setHits] = useState<KnowledgeHit[] | null>(null),
     [concept, setConcept] = useState<{ title: string; text: string } | null>(null);
@@ -52,10 +54,10 @@ export default function KnowledgeHits({
   if (!hits?.length) return null;
   const groups: Group[] = [];
   for (const h of hits) {
-    const id = h.paper ? `paper:${h.paper}` : h.memo ? `memo:${h.memo}` : `concept:${h.concept}`;
+    const id = h.paper ? `paper:${h.paper}` : h.memo ? `memo:${h.memo}` : h.idea ? `idea:${h.idea}` : `concept:${h.concept}`;
     let g = groups.find((x) => x.id === id);
     if (!g) {
-      g = { id, title: h.title, kind: h.paper ? "paper" : h.memo ? "memo" : "concept", hits: [] };
+      g = { id, title: h.title, kind: h.paper ? "paper" : h.memo ? "memo" : h.idea ? "idea" : "concept", hits: [] };
       groups.push(g);
     }
     if (g.hits.length < 3) g.hits.push(h);
@@ -64,6 +66,8 @@ export default function KnowledgeHits({
     if (h.paper) {
       const p = papers.find((x) => `${x.paper_id}/${x.version}` === h.paper);
       if (p) onOpen(p, undefined, h.page ?? undefined);
+    } else if (h.idea) {
+      onIdea(h.line || "", h.idea);
     } else if (h.memo) {
       location.hash = `/memos?id=${h.memo}`;
     } else if (h.concept) {
@@ -82,15 +86,15 @@ export default function KnowledgeHits({
         {groups.slice(0, 12).map((g) => (
           <div className="knowledge-group" key={g.id}>
             <div className="knowledge-source">
-              {g.kind === "paper" ? <FileText size={14} /> : g.kind === "memo" ? <NotebookPen size={14} /> : <BookOpen size={14} />}
+              {g.kind === "paper" ? <FileText size={14} /> : g.kind === "memo" ? <NotebookPen size={14} /> : g.kind === "idea" ? <Lightbulb size={14} /> : <BookOpen size={14} />}
               <strong>{g.kind === "paper" ? displayTitle(g.title) : g.title}</strong>
-              {g.kind !== "paper" && <em>{g.kind === "memo" ? "随记" : "概念卡片"}</em>}
+              {g.kind !== "paper" && <em>{g.kind === "memo" ? "随记" : g.kind === "idea" ? "研究线 Idea" : "概念卡片"}</em>}
             </div>
             {g.hits.map((h, i) => (
               <button className="knowledge-hit" key={i} onClick={() => open(h)}>
                 <span className="knowledge-meta">
                   <b>{h.kind_label}</b>
-                  {h.kind !== "concept" && h.kind !== "memo" && h.label && !/^[a-z]+_\d+$|^[a-z0-9-]+$/.test(h.label) ? ` · ${h.label}` : ""}
+                  {h.kind !== "concept" && h.kind !== "memo" && h.kind !== "idea" && h.label && !/^[a-z]+_\d+$|^[a-z0-9-]+$/.test(h.label) ? ` · ${h.label}` : ""}
                   {h.page ? ` · p.${h.page}` : ""}
                 </span>
                 <span className="knowledge-snippet">

@@ -22,7 +22,7 @@ MARKUP = re.compile(r"\$+|\*\*|`|^#+\s*|^>\s*(\[![A-Z]+\]\s*)?|\[[a-z0-9_,\- ]+\
 REPORT_FIELDS = [("overview", "概览"), ("motivation", "动机"), ("contributions", "贡献"), ("method", "方法"),
                  ("mathematics", "数学"), ("training", "训练"), ("inference", "推理"), ("limitations", "局限")]
 KINDS = {"claim": "结论", "report": "报告", "equation": "公式", "tutorial": "讲解", "note": "笔记",
-         "memo": "随记", "concept": "概念"}
+         "memo": "随记", "concept": "概念", "idea": "Idea"}
 
 
 def tokens(text: str) -> list[str]:
@@ -66,8 +66,9 @@ class Knowledge:
         r = self.root
         files = list(r.glob("papers/*/*/metadata.json")) + list(r.glob("papers/*/*/report.json")) + \
             list(r.glob("papers/*/*/notes.md")) + list(r.glob("memos/memo-*.md")) + list(r.glob("concepts/*.md"))
-        if (r / "lines.json").exists():
-            files.append(r / "lines.json")
+        for name in ("lines.json", "ideas.json"):
+            if (r / name).exists():
+                files.append(r / name)
         return sorted(files)
 
     def refresh(self):
@@ -134,6 +135,17 @@ class Knowledge:
             for para in paragraphs(body):
                 add("memo", para, memo=memo.stem, title=title, label="随记", page=None)
 
+        ideas_path = self.root / "ideas.json"
+        if ideas_path.exists():
+            try:
+                for idea in read_json(ideas_path).get("ideas", []):
+                    if idea.get("deleted_at"):
+                        continue
+                    text = plain(" ".join(idea.get(k, "") for k in ("title", "body", "pros", "cons", "next_step")))
+                    add("idea", text, idea=idea["id"], line=idea.get("line", ""), title=idea["title"], label="Idea", page=None)
+            except (OSError, ValueError, KeyError):
+                pass
+
         names = self.concept_names()
         for card in self.root.glob("concepts/*.md"):
             for para in paragraphs(card.read_text(encoding="utf-8")):
@@ -179,7 +191,7 @@ class Knowledge:
         scored.sort(key=lambda x: -x[0])
         hits = []
         for score, d in scored[:limit]:
-            hits.append({k: d.get(k) for k in ("kind", "paper", "memo", "concept", "title", "label", "page")}
+            hits.append({k: d.get(k) for k in ("kind", "paper", "memo", "concept", "idea", "line", "title", "label", "page")}
                         | {"kind_label": KINDS[d["kind"]], "snippet": snippet(d["text"], query, terms), "score": round(score, 3)})
         return hits
 

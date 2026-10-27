@@ -3,7 +3,7 @@
 Each snapshot is one zip in the backup folder: PAPERLAB_BACKUP_DIR (environment or .env.local),
 default ~/PaperLab-backups so it sits off the data drive. The server takes one when it starts and
 every 24 hours while it runs, skips it when nothing changed, and keeps the newest KEEP.
-Included: papers/, memos/, concepts/, knowledge/, research-outputs/, lines.json and imported local
+Included: papers/, memos/, concepts/, knowledge/, research-outputs/, lines.json, ideas.json and imported local
 PDFs (local-assets/local-*). arXiv PDFs and LaTeX can be downloaded again and stay out.
 """
 import hashlib
@@ -37,8 +37,9 @@ def included(root: Path):
                 # .write-*.tmp are atomic writes still in flight.
                 if path.is_file() and not path.name.startswith(".write-"):
                     yield path
-    if (root / "lines.json").is_file():
-        yield root / "lines.json"
+    for name in ("lines.json", "ideas.json"):
+        if (root / name).is_file():
+            yield root / name
 
 
 def fingerprint(files, root: Path) -> str:

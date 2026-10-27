@@ -224,11 +224,13 @@ export type ResearchLine = {
 };
 /** A passage matched by the library-wide knowledge search. */
 export type KnowledgeHit = {
-  kind: "claim" | "report" | "equation" | "tutorial" | "note" | "memo" | "concept";
+  kind: "claim" | "report" | "equation" | "tutorial" | "note" | "memo" | "concept" | "idea";
   kind_label: string;
   paper: string | null;
   memo: string | null;
   concept: string | null;
+  idea: string | null;
+  line: string | null;
   title: string;
   label: string;
   page: number | null;
@@ -248,6 +250,23 @@ export type GraphEdge = {
   target: string;
   type: "uses" | "in_line" | "relation" | "compares" | "similar";
   label: string;
+};
+export type LineIdeaStatus = "spark" | "exploring" | "parked" | "dropped" | "chosen";
+/** An idea in a research line's Idea 区 (ideas.json). */
+export type LineIdea = {
+  id: string;
+  line: string;
+  title: string;
+  body: string;
+  status: LineIdeaStatus;
+  scores: { novelty: number | null; feasibility: number | null; impact: number | null; cost: number | null };
+  pros: string;
+  cons: string;
+  next_step: string;
+  papers: string[];
+  created_at: string;
+  updated_at: string;
+  etag: string;
 };
 export type BackupStatus = {
   dir: string;

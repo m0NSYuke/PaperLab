@@ -26,6 +26,10 @@ TARGET.mkdir(parents=True, exist_ok=True)
 shutil.copytree(ROOT / "frontend/dist", TARGET / "frontend/dist")
 meta, _ = create(TARGET)
 fixture = {"paper_id": meta.paper_id, "version": meta.version}
+# One research line around the demo paper, for the Idea 区 test.
+(TARGET / "lines.json").write_text(json.dumps({"schema_version": "1.0", "lines": [{
+    "id": "demo-line", "name": "测试研究线", "kind": "idea", "question": "演示用的研究线。",
+    "papers": [{"key": f"{meta.paper_id}/{meta.version}", "role": "基线", "why": "演示论文"}]}]}, ensure_ascii=False), encoding="utf-8")
 if arxiv := os.environ.get("PAPERLAB_E2E_ARXIV", "").strip():
     paper_id, version = arxiv.split("/")
     for item in ["papers", "local-assets"]:

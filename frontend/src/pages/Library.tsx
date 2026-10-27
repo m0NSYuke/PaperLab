@@ -21,11 +21,12 @@ import {
   X,
 } from "lucide-react";
 import { api, readLocal, USER_NAME, writeLocal } from "../api";
-import type { BackupStatus, Paper, ResearchLine, StudyOverview, StudySummary } from "../types";
+import type { BackupStatus, LineIdea, Paper, ResearchLine, StudyOverview, StudySummary } from "../types";
 import Modal from "../components/Modal";
 import CardBrief from "../features/library/CardBrief";
 import KnowledgeGraph from "../features/library/KnowledgeGraph";
 import KnowledgeHits from "../features/library/KnowledgeHits";
+import IdeaBoard from "../features/library/IdeaBoard";
 import { useCommands, type CommandSource } from "../components/CommandPalette";
 const GREEK: Record<string, string> = {
   alpha: "α", beta: "β", gamma: "γ", delta: "δ", epsilon: "ε", lambda: "λ",
@@ -112,6 +113,8 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
     [topic, setTopic] = useState(""),
     [lines, setLines] = useState<ResearchLine[]>([]),
     [line, setLine] = useState(""),
+    [ideas, setIdeas] = useState<LineIdea[]>([]),
+    [focusIdea, setFocusIdea] = useState<string | null>(null),
     [backup, setBackup] = useState<BackupStatus | null>(null),
     [backingUp, setBackingUp] = useState(false),
     [year, setYear] = useState(""),
@@ -135,6 +138,9 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
         .catch(() => {});
       api<{ lines: ResearchLine[] }>("/api/lines")
         .then((r) => setLines(r.lines))
+        .catch(() => {});
+      api<{ ideas: LineIdea[] }>("/api/ideas")
+        .then((r) => setIdeas(r.ideas))
         .catch(() => {});
       api<BackupStatus>("/api/backup")
         .then(setBackup)
@@ -293,14 +299,20 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
                 key={l.id}
                 className={`topic-nav line-nav ${line === l.id ? "selected" : ""}`}
                 title={l.question}
-                onClick={() => pickLine(line === l.id ? "" : l.id)}
+                onClick={() => {
+                  setFocusIdea(null);
+                  pickLine(line === l.id ? "" : l.id);
+                }}
               >
                 <Milestone size={15} />
                 <span className="line-nav-name">
                   {l.name}
                   <em className={l.kind}>{lineKind[l.kind]}</em>
                 </span>
-                <small>{l.papers.length}</small>
+                <small title={`${l.papers.length} 篇论文 · ${ideas.filter((i) => i.line === l.id).length} 个 idea`}>
+                  {l.papers.length}
+                  {ideas.some((i) => i.line === l.id) && <i className="line-idea-count">· {ideas.filter((i) => i.line === l.id).length} idea</i>}
+                </small>
               </button>
             ))}
           </>
@@ -572,6 +584,17 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
                 <small>按下面的顺序读；每张卡片写了这篇在这条线上的作用。</small>
               </section>
             )}
+            {activeLine && (
+              <IdeaBoard
+                key={activeLine.id}
+                line={activeLine}
+                lines={lines}
+                papers={papers}
+                ideas={ideas}
+                setIdeas={setIdeas}
+                focusId={focusIdea}
+              />
+            )}
             {loading ? (
               <div className="empty-state">正在读取本地文献…</div>
             ) : filtered.length === 0 ? (
@@ -683,7 +706,16 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
                 ))}
               </div>
             )}
-            <KnowledgeHits query={query} papers={papers} onOpen={onOpen} />
+            <KnowledgeHits
+              query={query}
+              papers={papers}
+              onOpen={onOpen}
+              onIdea={(lineId, id) => {
+                setQuery("");
+                setFocusIdea(id);
+                pickLine(lineId);
+              }}
+            />
             <div className="library-help">
               <Terminal size={18} />
               <div>

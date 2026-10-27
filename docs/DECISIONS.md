@@ -75,3 +75,9 @@ Selection translation also listens to `selectionchange` on touch input (coarse p
 - The graph uses only what the library states (concept_links, related_papers matched to library titles, local_report comparison rows, lines.json) plus TF-IDF report similarity. Concept and similarity edges are off by default because hub concepts collapse the layout.
 - `paper.py related ID --version vN` lists the closest library papers for the paper skill's cross-paper comparison step; it falls back to the paper's first pages before a report exists.
 
+## Idea 区 in research lines (2026-10-27)
+
+- Each research line has an idea board for unvetted sparks that are scored and compared later. Stored in `<data>/ideas.json` (one file, per-idea etag = updated_at, soft delete with restore), separate from the per-paper ideas in study.json and from free-form 随记.
+- Tradeoffs are four 1–5 scores (novelty, feasibility, impact, cost) plus pros, cons and a next step. The composite novelty + feasibility + impact − cost only orders ideas once all four are scored; it is not a verdict.
+- ideas.json is user data: included in backups and knowledge search, never written by report generation.
+

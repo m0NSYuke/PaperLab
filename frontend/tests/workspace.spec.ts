@@ -436,3 +436,39 @@ test("knowledge search finds report passages and opens the paper at the cited pa
   await expect(page.locator(".knowledge-graph .graph-node.node-paper").first()).toBeVisible();
   expect(exceptions).toEqual([]);
 });
+
+test("research line Idea 区: capture a spark, score its tradeoffs, compare, delete and undo", async ({ page, request }) => {
+  const exceptions: string[] = [];
+  page.on("pageerror", (e) => exceptions.push(e.message));
+  await page.goto("/");
+  await page.locator(".line-nav", { hasText: "测试研究线" }).click();
+  const board = page.locator(".idea-board");
+  await board.getByLabel("记下一个闪念").fill("动作块长度随不确定性自适应");
+  await page.keyboard.press("Enter");
+  await board.getByLabel("记下一个闪念").fill("只在失败步骤上蒸馏");
+  await page.keyboard.press("Enter");
+  await expect(board.locator(".idea-card")).toHaveCount(2);
+  await board.locator(".idea-card", { hasText: "动作块长度" }).click();
+  for (const [label, n] of [["新意", 4], ["可行", 3], ["影响", 5], ["投入", 2]] as const)
+    await board.getByRole("radio", { name: `${label} ${n} 分` }).click();
+  await board.getByRole("radio", { name: "探索中" }).click();
+  await board.getByPlaceholder("最小的验证实验是什么").fill("仿真里对比固定 H 与自适应 H");
+  await expect(board.locator(".idea-score.total b")).toHaveText("10");
+  await expect(board.locator(".idea-save")).toHaveText("已保存");
+  // Saved to ideas.json, so it survives a reload.
+  const ideas = (await (await request.get("/api/ideas")).json()).ideas;
+  expect(ideas.find((i: { title: string }) => i.title.startsWith("动作块"))).toMatchObject({
+    status: "exploring", scores: { novelty: 4, feasibility: 3, impact: 5, cost: 2 }, next_step: "仿真里对比固定 H 与自适应 H",
+  });
+  await page.reload();
+  await page.locator(".line-nav", { hasText: "测试研究线" }).click();
+  await board.getByRole("button", { name: /对比/ }).click();
+  await expect(board.locator(".idea-compare tbody tr").first()).toContainText("动作块长度");
+  await expect(board.locator(".idea-compare tbody tr").first()).toContainText("10");
+  await board.locator(".idea-card", { hasText: "只在失败步骤" }).click();
+  await board.getByRole("button", { name: /删除/ }).click();
+  await expect(board.locator(".idea-card")).toHaveCount(1);
+  await board.locator(".idea-undo").getByRole("button", { name: "撤销" }).click();
+  await expect(board.locator(".idea-card")).toHaveCount(2);
+  expect(exceptions).toEqual([]);
+});

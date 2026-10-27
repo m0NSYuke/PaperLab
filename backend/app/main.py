@@ -374,6 +374,8 @@ def create_app(root: Path | None = None, lan_token: str | None = None, app_root:
     register_memos(app, root)
     from .lines import register_lines
     register_lines(app, root)
+    from .line_ideas import register_line_ideas
+    register_line_ideas(app, root)
     from .knowledge import register_knowledge
     register_knowledge(app, root)
     from .backup import default_dir, register_backup
