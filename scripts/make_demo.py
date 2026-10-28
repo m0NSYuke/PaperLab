@@ -92,7 +92,7 @@ def build_report(meta: Metadata) -> dict:
         "claim_id": cid, "section": section, "claim_type": kind, "text": text, "citations": cites,
         "evidence_status": "supported" if cites else "missing"}
     return {
-        "schema_version": "1.3", "paper_id": meta.paper_id, "version": meta.version, "analysis_status": "ready",
+        "schema_version": "1.4", "paper_id": meta.paper_id, "version": meta.version, "analysis_status": "ready",
         "triage": {
             "depth": "deep", "depth_source": "recommended", "paper_type": "method",
             "problem": "模仿学习策略逐步预测动作时，小误差会在长时程里累积。",
@@ -166,6 +166,16 @@ def build_report(meta: Metadata) -> dict:
         "concept_links": ["flow-matching"],
         "quality_checks": ["演示文档：PDF 与报告均由 scripts/make_demo.py 生成，不代表任何真实研究。",
                            "所有 verified 引句都通过了发布器的页文本校验。"],
+        "outline": [
+            {"title": "Abstract", "page": 1, "role": "摘要", "summary": "预测一整段未来动作（动作块），用流匹配训练，减少误差累积。"},
+            {"title": "1 Introduction", "page": 1, "role": "问题与动机",
+             "summary": "长时域模仿学习里小误差会累积；一次承诺多步动作能平滑行为。要回答：动作块该多长？"},
+            {"title": "2 Method", "page": 2, "role": "核心方法", "key": True,
+             "summary": "对动作块加噪并回归速度场，推理时 10 步欧拉积分；每个动作块只执行前一半就重新规划。"},
+            {"title": "3 Experiments", "page": 2, "role": "主结果", "key": True,
+             "summary": "三个仿真任务各 50 次：$H=8$ 成功率 0.82，单步基线 0.61，$H=32$ 反而降到 0.70。"},
+            {"title": "4 Limitations", "page": 3, "role": "局限", "summary": "玩具仿真、完美状态估计、每个配置只有一个随机种子。"},
+            {"title": "5 Conclusion", "page": 3, "role": "结论", "summary": "中等长度的动作块在平滑与反应之间折中最好，推广前需要真机和更多种子。"}],
         "reading_guide": {
             "first_pass": [{"page": 1, "label": "Abstract", "why": "一句话弄清：预测动作块解决什么问题。"},
                            {"page": 2, "label": "3 Experiments", "why": "只看结论：最好的动作块长度是多少。"}],

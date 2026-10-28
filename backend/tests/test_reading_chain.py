@@ -153,3 +153,23 @@ def test_skim_report_needs_only_triage(papers):
         "claim_ids": ["horizon"]}})
     published = publish_report(root, payload)
     assert published.triage.depth_source == "recommended" and published.deltas == []
+
+
+def test_schema_14_requires_the_paper_outline():
+    import pytest
+    from app.models import OutlineItem, Report
+    base = {"paper_id": "x", "version": "v1", "overview": "", "motivation": "", "contributions": "", "method": "",
+            "mathematics": "", "training": "", "inference": "", "experiments": [], "limitations": "",
+            "related_papers": [], "claims": [{"claim_id": "c1", "text": "t", "section": "overview",
+                                             "claim_type": "inference", "citations": [], "evidence_status": "missing"}],
+            "equations": [], "concept_links": [], "quality_checks": [],
+            "triage": {"depth": "skim", "depth_source": "recommended", "paper_type": "method", "claim_ids": ["c1"],
+                       "problem": "p", "core_change": "c", "headline_result": "h", "cost": "c", "credibility": "c", "rationale": "r"}}
+    with pytest.raises(ValueError, match="outline"):
+        Report.model_validate(base | {"schema_version": "1.4"})
+    report = Report.model_validate(base | {"schema_version": "1.4", "outline": [
+        {"title": "1 Introduction", "page": 1, "role": "问题与动机", "summary": "为什么要做", "key": True},
+        {"title": "3.1 Dynamics", "page": 3, "level": 2}]})
+    assert isinstance(report.outline[0], OutlineItem) and report.outline[1].level == 2
+    # Older schemas stay valid without an outline.
+    assert Report.model_validate(base | {"schema_version": "1.3"}).outline == []

@@ -1,6 +1,6 @@
 # Report specification
 
-Canonical schema: `docs/schemas/report.schema.json`, implemented by `backend/app/models.py`. New reports use schema version `1.3` (see the last section); 1.0–1.2 reports stay valid. JSON is the browser source, Markdown is deterministically rendered from JSON in reading-chain order: triage → overview / motivation / contributions → deltas → comparisons → tutorial → method / training / inference → mathematics and equations → experiments → evidence audit → limitations → relations and evidence.
+Canonical schema: `docs/schemas/report.schema.json`, implemented by `backend/app/models.py`. New reports use schema version `1.4` (see the last two sections); 1.0–1.3 reports stay valid. JSON is the browser source, Markdown is deterministically rendered from JSON in reading-chain order: triage → overview / motivation / contributions → deltas → comparisons → tutorial → method / training / inference → mathematics and equations → experiments → evidence audit → limitations → relations and evidence.
 
 Required sections: overview, motivation, contributions, method, mathematics, training, inference, structured experiments, limitations, related_papers, claims, equations, concept_links, quality_checks. Use the actual paper_id and pinned version. `analysis_status` is ready, needs_review or failed. The publisher supplies revision and generation timestamp.
 
@@ -104,3 +104,16 @@ Every 1.3 equation has `priority` **(enforced)**: `derive` (new and load-bearing
 ### Number traceability (enforced)
 
 Every number with a decimal point or at least two digits in triage, deltas, evidence_audit and comparison cells must appear in this report's claims, experiment records or verified quotes; a `local_report` row's numbers must appear in that paper's published report or the row's verified quotes. arXiv IDs and calendar years are exempt. When the publisher names an untraceable number, add the supporting claim with its verified quote or correct the number; never delete the evidence to pass.
+
+## Schema 1.4: the paper outline (required)
+
+New reports use `schema_version: "1.4"`: everything in 1.3 plus a non-empty `outline` **(enforced)**. The reader shows it as 论文结构 in the sidebar beside the PDF, so the user can follow the paper's argument section by section; many PDFs have no bookmarks at all.
+
+`outline: [{title, page, level, role, summary, key}]`, in the paper's own order:
+- `title`: the heading as printed, with its number ("3.2 Dynamics Model", "Appendix A.5 Planning Results").
+- `page`: the exact 1-based PDF page where the section starts **(enforced: within page_count)**.
+- `level`: 1 for sections, 2 for subsections. Include every section and the subsections a reader needs; skip bare acknowledgements and reference lists.
+- `role`: what the part does in the argument, in a few Chinese words, e.g. 问题与动机, 背景与前作, 核心方法, 训练细节, 实验设置, 主结果, 消融, 局限, 结论, 附录·实现细节.
+- `summary`: one or two sentences on what this part actually says or shows (its claim, design or result), not a restatement of the heading. Follow the notation rules; numbers must match the report's claims.
+- `key`: true for the parts the reader should study personally (normally the same pages as `reading_guide.must_read`).
+

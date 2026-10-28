@@ -99,3 +99,8 @@ Selection translation also listens to `selectionchange` on touch input (coarse p
 - Deleting a paper moves its papers/ and local-assets/ folders plus its research-line entries into `<data>/.trash/<id>-<version>-<ms>/`; restore puts all of it back, including each line position. The app never removes data for good.
 - When the data directory is the app folder (the default for new installs), lines.json, ideas.json, tags.json and .trash/ are git-ignored so they cannot be committed by accident.
 
+## Paper outline in every report (2026-10-28)
+
+- Report schema 1.4 adds a required `outline`: the paper's sections in order with page, level, the role each plays in the argument, a one- or two-sentence summary and a must-read flag. The publisher checks pages against page_count; 1.0–1.3 reports stay valid. The paper skill now writes 1.4.
+- The reader shows it as the first sidebar tab, 论文结构, because many PDFs carry no bookmarks (DINO-WM, Sparse VideoGen). On screens at least 1280 px wide the sidebar opens by default, and the user's open/closed choice is remembered.
+

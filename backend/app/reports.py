@@ -181,6 +181,9 @@ def validate_evidence(root: Path, report: Report, meta: Metadata):
         if citation.verification == "verified":
             if not pages or normalize(citation.quote) not in normalize(pages[citation.page - 1]["text"]):
                 raise ValueError(f"Citation quote does not match PDF page {citation.page}: {citation.quote[:80]}")
+    for item in report.outline:
+        if item.page > meta.page_count:
+            raise ValueError(f"Outline page out of range: {item.title} p.{item.page}")
     if report.reading_guide:
         for stop in report.reading_guide.first_pass + report.reading_guide.must_read:
             if stop.page > meta.page_count:
@@ -286,6 +289,10 @@ def render_markdown(report: Report, title: str) -> str:
         for row in t.rows:
             chunks += [f"- {t.title} / {row.label}: {c.paper_id} {c.version} p.{c.page or '?'} ({c.verification}) {c.quote}"
                        for c in row.citations]
+    if report.outline:
+        chunks += ["## Paper outline"]
+        chunks += ["\n".join(("  " if x.level == 2 else "") + f"- p.{x.page} {x.title}" + (f"【{x.role}】" if x.role else "")
+                             + ("（必读）" if x.key else "") + (f"：{x.summary}" if x.summary else "") for x in report.outline)]
     if report.reading_guide:
         chunks += ["## Reading guide"]
         for label, stops in [("第一遍：快速浏览", report.reading_guide.first_pass), ("必须亲读", report.reading_guide.must_read)]:

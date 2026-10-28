@@ -109,6 +109,16 @@ class GuideStop(Model):
     why: str = Field(default="", max_length=2000)
 
 
+class OutlineItem(Model):
+    """One section of the paper as printed, and what it does in the paper's argument."""
+    title: str = Field(min_length=1, max_length=200)
+    page: int = Field(ge=1)
+    level: Literal[1, 2] = 1
+    role: str = Field(default="", max_length=20)
+    summary: str = Field(default="", max_length=600)
+    key: bool = False
+
+
 class ReadingGuide(Model):
     """Three-pass reading route. first_pass = skim stops; must_read = pages the reader studies personally."""
     first_pass: list[GuideStop] = []
@@ -203,9 +213,9 @@ class Comparison(Model):
 
 
 class Report(Model):
-    # 1.1 adds optional reading_guide / self_test; 1.3 adds triage / deltas / evidence_audit / comparisons.
-    # Older reports stay valid unchanged.
-    schema_version: Literal["1.0", "1.1", "1.2", "1.3"] = "1.1"
+    # 1.1 adds optional reading_guide / self_test; 1.3 adds triage / deltas / evidence_audit / comparisons;
+    # 1.4 requires the paper outline. Older reports stay valid unchanged.
+    schema_version: Literal["1.0", "1.1", "1.2", "1.3", "1.4"] = "1.1"
     paper_id: str
     version: str
     generated_at: str = Field(default_factory=now)
@@ -232,6 +242,7 @@ class Report(Model):
     deltas: list[Delta] = []
     evidence_audit: list[EvidenceCheck] = []
     comparisons: list[Comparison] = []
+    outline: list[OutlineItem] = []
 
     @model_validator(mode="after")
     def unique_ids(self):
@@ -249,8 +260,10 @@ class Report(Model):
                            ("evidence check", [c.check_id for c in self.evidence_audit])]:
             if len(ids) != len(set(ids)):
                 raise ValueError(f"Duplicate {label} IDs")
-        if self.schema_version == "1.3":
+        if self.schema_version in ("1.3", "1.4"):
             self.check_reading_chain()
+        if self.schema_version == "1.4" and not self.outline:
+            raise ValueError("Schema 1.4 report requires the paper outline (outline)")
         return self
 
     def check_reading_chain(self):

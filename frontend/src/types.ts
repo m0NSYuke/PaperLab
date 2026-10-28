@@ -92,6 +92,14 @@ export type Comparison = {
   }[];
   note: string;
 };
+export type OutlineItem = {
+  title: string;
+  page: number;
+  level: 1 | 2;
+  role: string;
+  summary: string;
+  key: boolean;
+};
 export type Report = {
   schema_version: string;
   paper_id: string;
@@ -141,6 +149,8 @@ export type Report = {
   deltas?: Delta[];
   evidence_audit?: EvidenceCheck[];
   comparisons?: Comparison[];
+  /** 1.4: the paper's sections in order, with what each does in the argument. */
+  outline?: OutlineItem[];
 };
 export type TeachingUnit = {unit_id: string; title: string; body: string; citations: Citation[]};
 export type ReportBlock = {id: string; title: string; section: string; body: string; citations: Citation[]};

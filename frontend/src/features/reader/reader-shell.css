@@ -744,3 +744,81 @@
     display: none;
   }
 }
+
+/* 论文结构: the report's outline of the paper, section by section. */
+.structure-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.structure-list button {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  padding: 8px 9px;
+  border-radius: 9px;
+  text-align: left;
+  border-left: 2px solid transparent;
+  transition: background 0.15s;
+}
+.structure-list button.level-2 {
+  padding-left: 20px;
+}
+.structure-list button:hover {
+  background: var(--hover);
+}
+.structure-list button.here {
+  background: var(--panel);
+  box-shadow: var(--shadow-sm);
+  border-left-color: var(--accent);
+}
+.structure-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.structure-head strong {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text);
+}
+.structure-list button.level-2 .structure-head strong {
+  font-weight: 500;
+  font-size: 12.5px;
+}
+.structure-head em {
+  font-style: normal;
+  font-size: 11px;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.structure-role {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--accent);
+}
+.structure-role b {
+  font-weight: 600;
+  font-size: 10.5px;
+  padding: 0 6px;
+  border-radius: 999px;
+  color: var(--on-accent);
+  background: var(--accent);
+}
+.structure-list small {
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.structure-empty {
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--muted);
+  padding: 6px;
+}

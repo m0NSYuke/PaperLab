@@ -77,9 +77,12 @@ test("demo paper: library, PDF text layer, math, evidence, prompt, notes persist
   await page.getByRole("button", { name: "查找", exact: true }).click();
   await expect(page.locator(".pdf-notice")).toContainText("未匹配到原句");
   await expect(page.getByLabel("PDF 页码")).toHaveValue("2");
-  await page.getByRole("button", { name: "论文目录", exact: true }).click();
+  // Wide screens open the sidebar on 论文结构; the PDF bookmarks are one tab over.
+  await expect(page.getByLabel("论文结构")).toBeVisible();
+  await page.getByRole("tab", { name: "目录" }).click();
   await expect(page.locator(".pdf-outline")).toBeVisible();
   await page.getByRole("button", { name: "论文目录", exact: true }).click();
+  await expect(page.locator(".pdf-outline")).toBeHidden();
   const beforeZoom = (await page
     .locator('.pdfViewer .page[data-page-number="2"]')
     .boundingBox())!.width;
@@ -560,5 +563,23 @@ test("tags, papers and lines: add, rename and delete tags; delete a paper and un
   await page.getByRole("button", { name: "编辑研究线 测试研究线" }).click();
   await expect(page.getByRole("dialog")).toContainText("编辑研究线");
   await page.getByRole("dialog").getByRole("button", { name: "取消" }).click();
+  expect(exceptions).toEqual([]);
+});
+
+test("论文结构 sidebar: the report outline beside the PDF jumps to each section", async ({ page }) => {
+  const exceptions: string[] = [];
+  page.on("pageerror", (e) => exceptions.push(e.message));
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(demo.route);
+  await expect(page.locator(".pdfViewer .page canvas").first()).toBeVisible({ timeout: 30000 });
+  const structure = page.getByLabel("论文结构");
+  await expect(structure.locator("button")).toHaveCount(6);
+  await expect(structure).toContainText("核心方法");
+  await expect(structure.locator("button.key")).toHaveCount(2);
+  await structure.locator("button", { hasText: "4 Limitations" }).click();
+  await expect(page.getByLabel("PDF 页码")).toHaveValue("3");
+  await expect(structure.locator("button.here")).toContainText("5 Conclusion");
+  // Formulas in summaries render as math, not as raw LaTeX.
+  await expect(structure.locator(".katex").first()).toBeVisible();
   expect(exceptions).toEqual([]);
 });
