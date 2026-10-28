@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import Markdown from "../../components/Markdown";
 import type { OutlineItem } from "../../types";
 import "../report/toc.css";
@@ -42,10 +42,12 @@ export default function PaperToc({
   outline,
   page,
   onJump,
+  onCollapse,
 }: {
   outline: OutlineItem[];
   page: number;
   onJump: (page: number) => void;
+  onCollapse: () => void;
 }) {
   const chapters = chaptersOf(outline);
   const here = currentIndex(outline, page);
@@ -78,7 +80,12 @@ export default function PaperToc({
     );
   return (
     <nav className="paper-toc toc-panel" aria-label="论文目录">
-      <div className="toc-root">论文目录</div>
+      <div className="toc-root paper-toc-head">
+        论文目录
+        <button className="paper-toc-collapse" aria-label="收起论文目录" title="收起目录" onClick={onCollapse}>
+          <ChevronLeft size={15} />
+        </button>
+      </div>
       <ol>
         {chapters.map((chapter, c) => {
           const expanded = chapter.children.length > 0 && (open === null ? c === hereChapter : open === c);

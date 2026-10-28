@@ -581,8 +581,8 @@ test("论文目录 sidebar: numbered sections, folded notes and a rail when coll
   await toc.locator(".toc-chapter-link", { hasText: "4 Limitations" }).click();
   await expect(page.getByLabel("PDF 页码")).toHaveValue("3");
   await expect(toc.locator("li.here")).toContainText("5 Conclusion");
-  // Folded: one tick per section, still jumps.
-  await page.getByRole("button", { name: "论文目录", exact: true }).click();
+  // Folded from the panel's own button: one tick per section, still jumps.
+  await toc.getByRole("button", { name: "收起论文目录" }).click();
   const rail = page.getByRole("navigation", { name: "论文目录（已收起）" });
   await expect(rail.locator("button:not(.rail-open)")).toHaveCount(6);
   await rail.getByRole("button", { name: "2 Method" }).click();

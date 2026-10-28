@@ -897,3 +897,21 @@
   flex: 0 0 22px;
   padding: 0;
 }
+/* The table of contents folds from its own header. */
+.paper-toc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.paper-toc-collapse {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: var(--faint);
+}
+.paper-toc-collapse:hover {
+  background: var(--hover);
+  color: var(--text);
+}

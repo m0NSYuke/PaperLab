@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  ChevronLeft,
   ArrowLeft,
   ArrowUpRight,
   Bot,
@@ -612,10 +613,15 @@ export default function Reader({
         >
           {outline ? (
             <div className="sidebar-scroll">
-              <PaperToc outline={outline} page={state.page} onJump={goPage} />
+              <PaperToc outline={outline} page={state.page} onJump={goPage} onCollapse={toggleSidebar} />
             </div>
           ) : (
-            <div className="sidebar-title">目录 · PDF 书签</div>
+            <div className="sidebar-title paper-toc-head">
+              目录 · PDF 书签
+              <button className="paper-toc-collapse" aria-label="收起论文目录" title="收起目录" onClick={toggleSidebar}>
+                <ChevronLeft size={15} />
+              </button>
+            </div>
           )}
           <div className="sidebar-scroll" ref={setOutlineEl} hidden={!!outline} />
         </aside>
