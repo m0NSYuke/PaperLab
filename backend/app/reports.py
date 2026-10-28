@@ -336,6 +336,8 @@ def publish_report(root: Path, payload: dict) -> Report:
                  "pdf_sha256": meta.pdf_sha256, "page_count": meta.page_count,
                  "citations": [c.model_dump() for c in all_citations(report)]}
         meta.analysis_status = report.analysis_status
+        if report.triage and not meta.paper_type:
+            meta.paper_type = report.triage.paper_type
         outputs = {"report.md": md, "source-index.json": json.dumps(index, ensure_ascii=False, indent=2),
                    "metadata.json": meta.model_dump_json(indent=2), "report.json": report.model_dump_json(indent=2)}
         originals = {name: path(name).read_bytes() if path(name).exists() else None for name in outputs}

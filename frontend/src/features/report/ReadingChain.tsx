@@ -1,12 +1,11 @@
 import type {Citation, Comparison, Delta, Equation, EvidenceCheck, Triage} from "../../types";
 import Markdown from "../../components/Markdown";
 import {Citations} from "./ReportPane";
+import {paperTypeLabel} from "../library/paperTypes";
 
 // Schema 1.3 reading chain: triage → deltas against prior work → cross-paper comparison → evidence audit.
 const DEPTH = {deep: "精读", selective: "选读", skim: "略读"};
 const DEPTH_SOURCE = {user: "你指定", recommended: "AI 建议，最终由你判断"};
-const PAPER_TYPE: Record<string, string> = {method: "方法", system: "系统", benchmark: "基准 / 评测", survey: "综述",
-  technical_report: "技术报告", analysis: "分析", other: "其他"};
 const LOAD_BEARING = {yes: "承重", partial: "部分承重", no: "非承重", untested: "未检验"};
 const STRENGTH = {strong: "强", moderate: "中", weak: "弱", none: "无"};
 const ROW_SOURCE = {this_paper: "本文原文", local_report: "本地报告", unverified: "未核验 · 仅定性"};
@@ -18,7 +17,7 @@ export function TriageCard({triage}: {triage: Triage}) {
   const rows: [string, string][] = [
     ...(triage.user_context ? [["你的说明", triage.user_context] as [string, string]] : []),
     ...(triage.role ? [["在你研究中的角色", triage.role] as [string, string]] : []),
-    ["论文类型", PAPER_TYPE[triage.paper_type] || triage.paper_type],
+    ["论文类型", paperTypeLabel[triage.paper_type] || triage.paper_type],
     ["要解决的问题", triage.problem], ["核心改动", triage.core_change], ["主结果", triage.headline_result],
     ["代价", triage.cost], ["可信度初判", triage.credibility], ["为什么是这个深度", triage.rationale],
     ...(triage.focus.length ? [["重点阅读", triage.focus.join("；")] as [string, string]] : []),

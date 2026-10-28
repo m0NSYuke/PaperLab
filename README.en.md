@@ -56,12 +56,13 @@
 - **Knowledge graph**: draws papers, research lines and concept cards as one graph. Edges come from the related work and comparisons the reports name, line membership, the concepts used, and report similarity, each toggleable. Hover to see what a paper connects to; click to read it.
 - **Why read this**: the button at the bottom of each card shows, on hover, the reading motivation (from its research lines), the report's one-line takeaway and the parts worth reading closely.
 - **Add and remove tags, papers and lines**: click "+" next to 技术标签 in the sidebar to add a tag; hover a tag to rename or delete it (deleting removes it from every paper, never the papers themselves); hover a research line to edit or delete it. A card's 归类 panel ticks that paper's tags, takes a new tag, and ends with 从文献库删除: the report, notes and study records move together to `.trash/` in the data directory, the deletion can be undone at once, and the app itself never deletes anything for good.
+- **Filter by paper type**: a row of type buttons under the library heading (method / system / benchmark & dataset / survey / analysis / technical report / other) works in every view (all papers, each line, unfiled, tags, recent), with counts for the current view. The type comes from the report's triage, or from the title when there is no report (Bench, Survey, Technical Report…); each card shows it and the 归类 panel changes it.
 - **Sorting**: the whole library and each line keep their own order: default (reading order inside a line, recently opened for the library), import time, publication year, recently opened or title.
 - **Concept cards**: the background chapter of step ② starts with the general concepts the paper uses (DiT, video VAE, speculative decoding, RLVR / GRPO, chain-of-thought…), each a paper-independent explanation linked to the library's papers that use it.
 - Mark a paper as read at the end of step ③, so 阅读中 / 已完成 in the library reflect real progress.
 
 **More**
-- `Ctrl K` command palette and full keyboard control; a Claude-style interface with light and dark themes; phones and iPads on the same Wi-Fi can connect with an access key.
+- `Ctrl K` command palette and full keyboard control; a Claude-style interface, dark by default in Anthropic black (silver buttons and a slowly drifting background glow that stays still under reduced motion), with a light theme too; phones and iPads on the same Wi-Fi can connect with an access key.
 - Research workbench: 22 [Nature Skills](THIRD_PARTY_NOTICES.md) research tasks (writing, polishing, citation checks, figures and more; installed separately).
 
 ## Quick start (Windows)

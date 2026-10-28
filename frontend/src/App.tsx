@@ -12,13 +12,16 @@ import CommandPalette, {
   CommandContext,
   type CommandSource,
 } from "./components/CommandPalette";
+// Renamed when the dark theme became Anthropic black, so everyone lands on it once.
+const THEME_KEY = "paperlab.theme.v2";
+
 export default function App() {
   const [paper, setPaper] = useState<Paper | null>(null),
     [route, setRoute] = useState(location.hash),
     [routeLoading, setRouteLoading] = useState(false),
     [routeError, setRouteError] = useState(""),
     [dirty, setDirty] = useState(false),
-    [theme, setTheme] = useState(() => readLocal("paperlab.theme", "light")),
+    [theme, setTheme] = useState(() => readLocal(THEME_KEY, "dark")),
     [palette, setPalette] = useState(false),
     [pageSource, setPageSource] = useState<CommandSource>({ commands: [] });
   const paperTone = usePaperTone();
@@ -27,7 +30,7 @@ export default function App() {
   dirtyRef.current = dirty;
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    writeLocal("paperlab.theme", theme);
+    writeLocal(THEME_KEY, theme);
   }, [theme]);
   useEffect(() => {
     const key = (e: KeyboardEvent) => {

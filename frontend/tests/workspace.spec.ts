@@ -13,9 +13,9 @@ test("demo paper: library, PDF text layer, math, evidence, prompt, notes persist
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "我的文献库" })).toBeVisible();
-  await page.getByRole("button", { name: "切换深色主题" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await page.getByRole("button", { name: "切换浅色主题" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   await page.getByLabel("搜索文献").fill("no-such-paper");
   await expect(page.getByText("没有匹配的论文")).toBeVisible();
   await page.getByLabel("搜索文献").fill("Chunked Flow");

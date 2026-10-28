@@ -30,6 +30,7 @@ import KnowledgeHits from "../features/library/KnowledgeHits";
 import IdeaBoard from "../features/library/IdeaBoard";
 import LineDialog from "../features/library/LineDialog";
 import LinePicker from "../features/library/LinePicker";
+import { PAPER_TYPES, paperTypeLabel, typeOf } from "../features/library/paperTypes";
 import { useCommands, type CommandSource } from "../components/CommandPalette";
 const GREEK: Record<string, string> = {
   alpha: "α", beta: "β", gamma: "γ", delta: "δ", epsilon: "ε", lambda: "λ",
@@ -144,6 +145,7 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
     [backingUp, setBackingUp] = useState(false),
     [year, setYear] = useState(""),
     [status, setStatus] = useState(""),
+    [ptype, setPtype] = useState(""),
     [view, setView] = useState<View>("library"),
     [list, setList] = useState(false),
     [importOpen, setImportOpen] = useState<null | "arxiv" | "pdf">(null),
@@ -191,7 +193,7 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
   const unfiled = papers.filter((p) => !filedKeys.has(paperKey(p)));
   const linePos = (p: Paper) =>
     activeLine ? activeLine.papers.findIndex((x) => x.key === paperKey(p)) : -1;
-  const filtered = papers.filter(
+  const inScope = papers.filter(
     (p) =>
       (!query ||
         `${p.title} ${p.authors.join(" ")} ${p.paper_id} ${p.doi || ""} ${p.topics.join(" ")}`
@@ -208,6 +210,9 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
       (!status || p.reading_status === status) &&
       (view !== "recent" || p.last_opened_at),
   );
+  // Paper types cut across every view: counts follow the papers the other filters leave.
+  const typeCounts = inScope.reduce<Record<string, number>>((n, p) => ((n[typeOf(p)] = (n[typeOf(p)] || 0) + 1), n), {});
+  const filtered = ptype ? inScope.filter((p) => typeOf(p) === ptype) : inScope;
   // Inside a research line, papers follow the line's reading order.
   const sortScope = line || "library";
   const sort: Sort = sorts[sortScope] && SORTS[sorts[sortScope]] ? sorts[sortScope] : "default";
@@ -785,6 +790,22 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
                 </button>
               </div>
             </div>
+            <div className="type-filter" role="group" aria-label="按论文类型筛选">
+              <button className={!ptype ? "on" : ""} aria-pressed={!ptype} onClick={() => setPtype("")}>
+                全部<small>{inScope.length}</small>
+              </button>
+              {PAPER_TYPES.filter(([key]) => typeCounts[key] || ptype === key).map(([key, zh, en]) => (
+                <button
+                  key={key}
+                  className={ptype === key ? "on" : ""}
+                  aria-pressed={ptype === key}
+                  title={en}
+                  onClick={() => setPtype(ptype === key ? "" : key)}
+                >
+                  {zh}<small>{typeCounts[key] || 0}</small>
+                </button>
+              ))}
+            </div>
             {error && (
               <div className="error-banner" role="alert">
                 {error}
@@ -888,6 +909,7 @@ export default function Library({ onOpen }: { onOpen: (p: Paper, focus?: "study"
                         {p.paper_id.startsWith("local-") ? "本地文献" : "arXiv"}
                         <span>{p.version}</span>
                       </span>
+                      <span className={`type-badge ${typeOf(p)}`}>{paperTypeLabel[typeOf(p)]}</span>
                       <span className={`status-dot ${p.reading_status}`}>
                         {readingLabel[p.reading_status]}
                       </span>

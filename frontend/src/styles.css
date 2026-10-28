@@ -30,6 +30,13 @@
   --accent-strong: #ad4f30;
   --accent-soft: #f6e6dd;
   --on-accent: #ffffff;
+  --btn: #141413;
+  --btn-strong: #3d3d3a;
+  --on-btn: #faf9f5;
+  --btn-edge: transparent;
+  --ambient-a: rgba(217, 119, 87, 0.10);
+  --ambient-b: rgba(106, 155, 204, 0.08);
+  --ambient-c: rgba(188, 209, 202, 0.16);
 
   --ok: #5c6f43;
   --ok-soft: #e9eddf;
@@ -62,21 +69,29 @@
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #262624;
-  --bg-sunk: #1f1e1d;
-  --panel: #30302e;
-  --soft: #3a3a37;
-  --hover: rgba(250, 249, 245, 0.06);
-  --border: #3d3d3a;
-  --border-strong: #4d4c48;
+  /* Anthropic black: near-black ink, slate panels, ivory text; silver replaces clay as the accent. */
+  --bg: #141413;
+  --bg-sunk: #1a1918;
+  --panel: #1f1e1d;
+  --soft: #2a2927;
+  --hover: rgba(250, 249, 245, 0.055);
+  --border: #2d2c2a;
+  --border-strong: #3d3c39;
   --text: #faf9f5;
   --text-2: #dedcd1;
-  --muted: #a6a49b;
-  --faint: #87867f;
-  --accent: #d97757;
-  --accent-strong: #e48a6c;
-  --accent-soft: rgba(217, 119, 87, 0.16);
-  --on-accent: #1f1e1d;
+  --muted: #a3a197;
+  --faint: #7d7b74;
+  --accent: #e8e6dc;
+  --accent-strong: #ffffff;
+  --accent-soft: rgba(232, 230, 220, 0.1);
+  --on-accent: #141413;
+  --btn: linear-gradient(180deg, #faf9f5 0%, #d9d7cd 100%);
+  --btn-strong: linear-gradient(180deg, #ffffff 0%, #e8e6dc 100%);
+  --on-btn: #141413;
+  --btn-edge: rgba(255, 255, 255, 0.55);
+  --ambient-a: rgba(217, 119, 87, 0.2);
+  --ambient-b: rgba(106, 155, 204, 0.16);
+  --ambient-c: rgba(232, 230, 220, 0.08);
   --ok: #a9bd8b;
   --ok-soft: rgba(120, 140, 93, 0.2);
   --warn: #dcb06a;
@@ -85,10 +100,10 @@
   --danger-soft: rgba(229, 138, 127, 0.14);
   --info: #90c3f6;
   --info-soft: rgba(106, 155, 204, 0.18);
-  --shadow-sm: 0 0 0 0.5px rgba(250, 249, 245, 0.08);
-  --shadow: 0 4px 20px rgba(0, 0, 0, 0.25),
-    0 0 0 0.5px rgba(250, 249, 245, 0.08);
-  --shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.45),
+  --shadow-sm: 0 0 0 0.5px rgba(250, 249, 245, 0.07);
+  --shadow: 0 6px 24px rgba(0, 0, 0, 0.4),
+    0 0 0 0.5px rgba(250, 249, 245, 0.07);
+  --shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.6),
     0 0 0 0.5px rgba(250, 249, 245, 0.1);
   color: var(--text);
   background: var(--bg);
@@ -122,7 +137,53 @@ html {
 body {
   margin: 0;
   min-width: 320px;
-  background: var(--bg);
+  /* The page colour lives on :root so the ambient layer below can show through the body. */
+  background: transparent;
+}
+/* Ambient layer behind every page: three soft glows drifting slowly. The reader's opaque panes
+   cover it, and it stops for people who ask for reduced motion. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -20vmax;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(38vmax 30vmax at 22% 18%, var(--ambient-a), transparent 70%),
+    radial-gradient(42vmax 34vmax at 82% 30%, var(--ambient-b), transparent 70%),
+    radial-gradient(46vmax 30vmax at 50% 92%, var(--ambient-c), transparent 70%);
+  animation: ambient-drift 48s ease-in-out infinite alternate;
+  will-change: transform;
+}
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(color-mix(in srgb, var(--text) 9%, transparent) 0.6px, transparent 0.8px);
+  background-size: 22px 22px;
+  mask-image: radial-gradient(ellipse at 50% 0%, #000 0%, transparent 75%);
+  opacity: 0.55;
+}
+@keyframes ambient-drift {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translate3d(4vmax, -3vmax, 0) rotate(8deg) scale(1.06);
+  }
+  100% {
+    transform: translate3d(-3vmax, 4vmax, 0) rotate(-6deg) scale(0.98);
+  }
+}
+:root:has(.reader-layout) body::before {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  body::before {
+    animation: none;
+  }
 }
 button,
 input,
@@ -285,11 +346,12 @@ code {
   transform: translateY(0.5px);
 }
 .primary {
-  background: var(--accent);
-  color: var(--on-accent);
+  background: var(--btn);
+  color: var(--on-btn);
+  box-shadow: inset 0 1px 0 var(--btn-edge), var(--shadow-sm);
 }
 .primary:hover:not(:disabled) {
-  background: var(--accent-strong);
+  background: var(--btn-strong);
 }
 .secondary {
   border: 1px solid var(--border-strong);
@@ -418,7 +480,8 @@ code {
   align-items: center;
   padding: 0 20px 0 22px;
   gap: 18px;
-  background: var(--bg);
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  backdrop-filter: blur(14px) saturate(1.2);
   position: relative;
   z-index: 5;
 }
@@ -616,7 +679,7 @@ code {
   width: 248px;
   flex-shrink: 0;
   border-right: 1px solid var(--border);
-  background: var(--bg-sunk);
+  background: color-mix(in srgb, var(--bg-sunk) 78%, transparent);
   display: flex;
   flex-direction: column;
   padding: 18px 12px 18px;
@@ -889,12 +952,12 @@ code {
   border-radius: 12px;
   display: grid;
   place-items: center;
-  background: var(--accent);
-  color: var(--on-accent);
+  background: var(--btn);
+  color: var(--on-btn);
   transition: background 0.15s;
 }
 .composer-send:hover:not(:disabled) {
-  background: var(--accent-strong);
+  background: var(--btn-strong);
 }
 .composer-hint {
   margin-top: 12px;
@@ -1038,7 +1101,7 @@ code {
   align-items: stretch;
 }
 .paper-card {
-  background: var(--panel);
+  background: color-mix(in srgb, var(--panel) 92%, transparent);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   text-align: left;
@@ -3999,8 +4062,9 @@ details summary > span {
   border: 1.5px solid var(--border-strong);
 }
 .idea-score > div button.on {
-  background: var(--accent);
-  border-color: var(--accent);
+  background: var(--btn);
+  border-color: transparent;
+  color: var(--on-btn);
 }
 .idea-score.total b {
   font-size: 15px;
@@ -4168,9 +4232,9 @@ details summary > span {
   font-size: 12px;
 }
 .auto-file-bar button.confirm {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--on-accent);
+  background: var(--btn);
+  border-color: transparent;
+  color: var(--on-btn);
 }
 .auto-file-bar select {
   padding: 2px 6px;
@@ -4424,4 +4488,70 @@ details summary > span {
   border-top: 1px solid var(--border);
   color: var(--danger);
   font-size: 12.5px;
+}
+
+/* ------------------------- paper types ------------------------- */
+.type-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: -6px 0 22px;
+}
+.type-filter button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--panel) 70%, transparent);
+  color: var(--text-2);
+  font-size: 13px;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.type-filter button small {
+  font-size: 11px;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+.type-filter button:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+.type-filter button.on {
+  background: var(--btn);
+  border-color: transparent;
+  color: var(--on-btn);
+  box-shadow: inset 0 1px 0 var(--btn-edge);
+}
+.type-filter button.on small {
+  color: inherit;
+  opacity: 0.6;
+}
+.type-badge {
+  margin-right: auto;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.type-badge.benchmark {
+  color: var(--info);
+  border-color: color-mix(in srgb, var(--info) 35%, transparent);
+}
+.type-badge.survey {
+  color: var(--ok);
+  border-color: color-mix(in srgb, var(--ok) 35%, transparent);
+}
+.type-badge.analysis {
+  color: var(--warn);
+  border-color: color-mix(in srgb, var(--warn) 35%, transparent);
+}
+.type-badge.technical_report,
+.type-badge.system {
+  color: var(--text-2);
+  border-color: var(--border-strong);
 }

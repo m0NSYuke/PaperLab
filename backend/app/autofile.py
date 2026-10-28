@@ -7,6 +7,7 @@ Runs after every import (web or CLI) for a paper that is in no line yet; nothing
 - The paper joins the best line, and any other line reaching 70 % of its score, as an entry with
   `auto: true` and the evidence in `why`. Below the threshold it stays unfiled for the user.
 - Empty technical tags are filled from keyword rules, else from the most similar papers' tags.
+- An empty paper type is taken from the report's triage, else guessed from the title (`guess_type`).
 The user confirms, moves or removes auto-filed papers from the library.
 """
 import re
@@ -30,6 +31,20 @@ TOPIC_RULES = {
     "具身机器人": ["robot", "manipulation", "embodied", "具身"],
     "计算机视觉": ["anomaly detection", "segmentation", "object detection", "异常检测"],
 }
+
+# Title cues for the paper type, checked in order; anything else is a method paper.
+TYPE_RULES = [
+    ("survey", r"\bsurvey\b|\boverview of\b|\ba review\b|systematic review|综述"),
+    ("technical_report", r"technical report|\btech report\b|技术报告"),
+    ("benchmark", r"bench(mark(s|ing)?)?\b|\bdatasets?\b|\barena\b|leaderboard|\bevaluation\b|\bevaluating\b|评测"),
+    ("analysis", r"^(what|why|how|do|does|is|are|can|when)\b|empirical study|\brevisiting\b|\brethinking\b"
+                 r"|\bunderstanding\b|\banalysis of\b|\blessons\b"),
+]
+
+
+def guess_type(title: str) -> str:
+    low = title.lower()
+    return next((kind for kind, cue in TYPE_RULES if re.search(cue, low)), "method")
 
 
 def hits(keyword: str, text: str) -> int:
@@ -117,7 +132,13 @@ def autofile(root: Path, meta: Metadata, force: bool = False) -> dict:
                     save_lines(root, data)
         meta_path = safe_path(root, str(paper_dir(root, meta.paper_id, meta.version).relative_to(root)), "metadata.json")
         current = Metadata.model_validate(read_json(meta_path))
+        changed = False
         if not current.topics and result["topics"]:
-            current.topics = result["topics"]
+            current.topics, changed = result["topics"], True
+        if not current.paper_type:
+            report = meta_path.with_name("report.json")
+            triage = read_json(report).get("triage") if report.exists() else None
+            current.paper_type, changed = (triage or {}).get("paper_type") or guess_type(current.title), True
+        if changed:
             write_json(meta_path, current.model_dump())
-    return {"filed": filed, "topics": result["topics"], "scores": result["lines"]}
+    return {"filed": filed, "topics": result["topics"], "paper_type": current.paper_type, "scores": result["lines"]}

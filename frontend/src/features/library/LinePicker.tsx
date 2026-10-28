@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { FolderInput, Trash2, Wand2 } from "lucide-react";
 import { api, base } from "../../api";
 import type { Paper, ResearchLine, TagView } from "../../types";
+import { PAPER_TYPES, typeOf } from "./paperTypes";
 
 /**
  * The 归类 button on a library card: tick the research lines and technical tags this paper
@@ -64,6 +65,10 @@ export default function LinePicker({
     run(async () => {
       onPaper(await api<Paper>(base(paper.paper_id, paper.version), { method: "PATCH", body: JSON.stringify({ topics }) }));
     });
+  const setType = (paper_type: string) =>
+    run(async () => {
+      onPaper(await api<Paper>(base(paper.paper_id, paper.version), { method: "PATCH", body: JSON.stringify({ paper_type }) }));
+    });
   const addTag = () => {
     const name = newTag.trim();
     if (!name) return;
@@ -110,6 +115,15 @@ export default function LinePicker({
             </button>
           )}
           {note && <p className="brief-empty">{note}</p>}
+          <div className="brief-label picker-section">论文类型</div>
+          <div className="picker-tags picker-types">
+            {PAPER_TYPES.map(([k, zh]) => (
+              <label key={k} className={typeOf(paper) === k ? "on" : ""}>
+                <input type="radio" name={`type-${key}`} disabled={busy} checked={typeOf(paper) === k} onChange={() => void setType(k)} />
+                {zh}
+              </label>
+            ))}
+          </div>
           <div className="brief-label picker-section">技术标签</div>
           <div className="picker-tags">
             {tags.map((t) => (

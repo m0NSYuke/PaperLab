@@ -104,3 +104,10 @@ Selection translation also listens to `selectionchange` on touch input (coarse p
 - Report schema 1.4 adds a required `outline`: the paper's sections in order with page, level, the role each plays in the argument, a one- or two-sentence summary and a must-read flag. The publisher checks pages against page_count; 1.0–1.3 reports stay valid. The paper skill now writes 1.4.
 - The reader shows it as the first sidebar tab, 论文结构, because many PDFs carry no bookmarks (DINO-WM, Sparse VideoGen). On screens at least 1280 px wide the sidebar opens by default, and the user's open/closed choice is remembered.
 
+
+## Paper types and the Anthropic-black theme (2026-10-28)
+
+- Metadata gains an optional `paper_type` (the triage enum: method, system, benchmark, survey, technical_report, analysis, other). Publishing a report fills it from triage when empty; import fills it from the report or from title cues (`autofile.guess_type`); the user's choice in 归类 is never overwritten. Papers without one count as 其他.
+- The library shows type chips under its heading in every view; counts follow the other filters, so they always describe what is on screen.
+- The dark theme moved to Anthropic black (#141413 ground, #1f1e1d panels) with silver as the accent; primary buttons use their own `--btn` tokens (silver gradient in dark, ink black in light) instead of clay. Clay stays for the brand mark.
+- Dark is the default; the theme key was renamed (`paperlab.theme.v2`) so existing browsers see the new theme once. The page colour moved from body to :root so a fixed ambient layer (three drifting radial glows plus a faint dot grid) can sit behind the library; it stops in the reader and under prefers-reduced-motion.

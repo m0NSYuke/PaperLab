@@ -1,3 +1,4 @@
+export type PaperType = "method" | "system" | "benchmark" | "survey" | "technical_report" | "analysis" | "other";
 export type Paper = {
   schema_version: string;
   paper_id: string;
@@ -8,6 +9,7 @@ export type Paper = {
   source_url: string | null;
   doi: string | null;
   topics: string[];
+  paper_type?: PaperType | null;
   reading_status: "unread" | "reading" | "completed";
   analysis_status:
     "not_analyzed" | "analyzing" | "ready" | "failed" | "needs_review";

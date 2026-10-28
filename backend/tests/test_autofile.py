@@ -2,7 +2,7 @@ import json
 
 from fastapi.testclient import TestClient
 
-from app.autofile import autofile, hits
+from app.autofile import autofile, guess_type, hits
 from app.main import create_app
 from app.models import Metadata
 
@@ -62,6 +62,25 @@ def test_new_import_joins_the_matching_line_and_gets_tags(tmp_path):
     # The saved file stays compact and hand-editable.
     raw = (tmp_path / "lines.json").read_text(encoding="utf-8")
     assert '"auto": false' not in raw and '"keywords"' in raw
+
+
+def test_paper_types_come_from_the_report_else_the_title_and_stay_editable(tmp_path):
+    assert guess_type("VGI-Bench: Probing Visual Intelligence") == "benchmark"
+    assert guess_type("A Survey on World Models") == "survey"
+    assert guess_type("DeepSeek-V3 Technical Report") == "technical_report"
+    assert guess_type("What Drives Interactive Improvement from Feedback?") == "analysis"
+    assert guess_type("Latent Action Pretraining from Videos") == "method"
+    plain = add_paper(tmp_path, "2501.00001", "VideoPhy-2: A Physical Commonsense Evaluation", "")
+    assert autofile(tmp_path, plain)["paper_type"] == "benchmark"
+    triaged = add_paper(tmp_path, "2501.00002", "Small Models Struggle to Learn", "", "**x**")
+    report = tmp_path / "papers/2501.00002/v1/report.json"
+    write(report, json.loads(report.read_text(encoding="utf-8")) | {"triage": {"paper_type": "analysis"}})
+    assert autofile(tmp_path, triaged)["paper_type"] == "analysis"
+    client = TestClient(create_app(tmp_path))
+    assert client.patch("/api/papers/2501.00002/v1", json={"paper_type": "survey"}).json()["paper_type"] == "survey"
+    assert client.patch("/api/papers/2501.00002/v1", json={"paper_type": "poster"}).status_code == 422
+    # A type the user chose is never overwritten by filing again.
+    assert autofile(tmp_path, triaged, force=True)["paper_type"] == "survey"
 
 
 def test_keyword_matching_respects_word_starts():

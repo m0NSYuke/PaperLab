@@ -11,6 +11,9 @@ class Model(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+PaperType = Literal["method", "system", "benchmark", "survey", "technical_report", "analysis", "other"]
+
+
 class Metadata(Model):
     schema_version: Literal["1.0"] = "1.0"
     paper_id: str
@@ -25,6 +28,7 @@ class Metadata(Model):
     pdf_sha256: str | None = None
     tex_sha256: str | None = None
     topics: list[str] = []
+    paper_type: PaperType | None = None
     reading_status: Literal["unread", "reading", "completed"] = "unread"
     analysis_status: Literal["not_analyzed", "analyzing", "ready", "failed", "needs_review"] = "not_analyzed"
     imported_at: str = Field(default_factory=now)
@@ -160,7 +164,7 @@ class Triage(Model):
     depth_source: Literal["user", "recommended"] = "recommended"
     user_context: str = Field(default="", max_length=2000)
     role: str = Field(default="", max_length=500)
-    paper_type: Literal["method", "system", "benchmark", "survey", "technical_report", "analysis", "other"]
+    paper_type: PaperType
     problem: str = Field(min_length=1)
     core_change: str = Field(min_length=1)
     headline_result: str = Field(min_length=1)
@@ -360,6 +364,7 @@ class Highlight(HighlightInput):
 class MetadataPatch(Model):
     reading_status: Literal["unread", "reading", "completed"] | None = None
     topics: list[str] | None = None
+    paper_type: PaperType | None = None
     title: str | None = Field(default=None, min_length=1, max_length=1000)
     last_opened_at: str | None = None
 
