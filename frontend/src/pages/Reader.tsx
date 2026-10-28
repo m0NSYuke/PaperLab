@@ -25,7 +25,6 @@ import type {
   Citation,
   Claim,
   Correction,
-  GuideStop,
   Paper,
   ReadingState,
   Report,
@@ -40,6 +39,7 @@ import StudyPane from "../features/study/StudyPane";
 import { useCommands, type CommandSource } from "../components/CommandPalette";
 import Modal from "../components/Modal";
 import Markdown from "../components/Markdown";
+import PaperToc, { PaperTocRail } from "../features/reader/PaperToc";
 import {blockContext, reportBlocks} from "../features/report/reading";
 import { useConceptNames } from "../features/report/conceptNames";
 import "../features/report/reading.css";
@@ -106,7 +106,6 @@ export default function Reader({
   const [searchOpen, setSearchOpen] = useState(false),
     // Open by default on wide screens so 论文结构 sits beside the paper; the user's choice is remembered.
     [sidebarOpen, setSidebarOpen] = useState<boolean>(() => readLocal(SIDEBAR_KEY, window.innerWidth >= 1280)),
-    [sidebarTab, setSidebarTab] = useState<"structure" | "outline" | "route">("structure"),
     [focus, setFocus] = useState(false),
     [resizing, setResizing] = useState(false),
     [translateOn, setTranslateOn] = useState<boolean>(() => readLocal("paperlab.translateOnSelect", true)),
@@ -379,10 +378,6 @@ export default function Reader({
     [report, paper.page_count, goPage, conceptName],
   );
   useCommands(commands);
-  useEffect(() => {
-    if (sidebarTab !== "structure" || !sidebarOpen) return;
-    document.querySelector(".structure-list button.here")?.scrollIntoView({ block: "nearest", behavior: "smooth" });
-  }, [state.page, sidebarTab, sidebarOpen, report]);
   const resize = (e: React.PointerEvent) => {
     e.currentTarget.setPointerCapture(e.pointerId);
     const start = e.clientX,
@@ -425,10 +420,12 @@ export default function Reader({
     ["split", "对照", "原文与讲解并排"],
     ["pdf", "原文", "只看原文（隐藏讲解栏）"],
   ] as const;
-  const routeGroups: [string, GuideStop[] | undefined][] = [
-    ["第一遍 · 快速浏览", report?.reading_guide?.first_pass],
-    ["第三遍 · 必须亲读", report?.reading_guide?.must_read],
-  ];
+  const outline = report?.outline?.length ? report.outline : null;
+  const toggleSidebar = () =>
+    setSidebarOpen((o) => {
+      writeLocal(SIDEBAR_KEY, !o);
+      return !o;
+    });
   return (
     <div className="reader-layout" data-view={shown} data-focus={focus || undefined}>
       {focus && <div className="focus-reveal" aria-hidden="true" />}
@@ -451,12 +448,7 @@ export default function Reader({
             aria-label="论文目录"
             aria-pressed={sidebarOpen}
             title="目录与阅读路线"
-            onClick={() =>
-              setSidebarOpen((o) => {
-                writeLocal(SIDEBAR_KEY, !o);
-                return !o;
-              })
-            }
+            onClick={toggleSidebar}
           >
             <PanelLeft size={17} />
           </button>
@@ -611,83 +603,21 @@ export default function Reader({
         </div>
       ))}
       <div className="reader-body">
+        {outline && !sidebarOpen && !focus && (
+          <PaperTocRail outline={outline} page={state.page} onJump={goPage} onOpen={toggleSidebar} />
+        )}
         <aside
           className={`reader-sidebar ${sidebarOpen && !focus ? "open" : ""}`}
           aria-hidden={!sidebarOpen}
         >
-          <div className="sidebar-tabs" role="tablist">
-            <button role="tab" aria-selected={sidebarTab === "structure"} onClick={() => setSidebarTab("structure")}>
-              论文结构
-            </button>
-            <button role="tab" aria-selected={sidebarTab === "outline"} onClick={() => setSidebarTab("outline")}>
-              目录
-            </button>
-            <button role="tab" aria-selected={sidebarTab === "route"} onClick={() => setSidebarTab("route")}>
-              阅读路线
-            </button>
-          </div>
-          {sidebarTab === "structure" && (
-            <div className="sidebar-scroll structure-list" aria-label="论文结构">
-              {report?.outline?.length ? (
-                report.outline.map((item, i) => {
-                  // The section being read: the last one starting at or before the current page.
-                  const here = report.outline!.reduce((at, x, j) => (x.page <= state.page ? j : at), -1) === i;
-                  return (
-                    <button
-                      key={i}
-                      className={`level-${item.level} ${here ? "here" : ""} ${item.key ? "key" : ""}`}
-                      onClick={() => goPage(item.page)}
-                    >
-                      <span className="structure-head">
-                        <strong>{item.title}</strong>
-                        <em>p.{item.page}</em>
-                      </span>
-                      {(item.role || item.key) && (
-                        <span className="structure-role">
-                          {item.role}
-                          {item.key && <b>必读</b>}
-                        </span>
-                      )}
-                      {item.summary && (
-                        <small>
-                          <Markdown inline>{item.summary}</Markdown>
-                        </small>
-                      )}
-                    </button>
-                  );
-                })
-              ) : (
-                <p className="structure-empty" data-empty>
-                  这份报告还没有「论文结构」。用 /paper 重新生成报告后会出现：每一节讲什么、在全文逻辑里起什么作用。先看「目录」里的 PDF 书签。
-                </p>
-              )}
+          {outline ? (
+            <div className="sidebar-scroll">
+              <PaperToc outline={outline} page={state.page} onJump={goPage} />
             </div>
+          ) : (
+            <div className="sidebar-title">目录 · PDF 书签</div>
           )}
-          <div className="sidebar-scroll" ref={setOutlineEl} hidden={sidebarTab !== "outline"} />
-          {sidebarTab === "route" && (
-            <div className="sidebar-scroll route-list">
-              {routeGroups.map(([title, stops]) => (
-                <section key={title}>
-                  <h4>{title}</h4>
-                  {stops?.length ? (
-                    stops.map((stop) => (
-                      <button
-                        key={stop.page + stop.label}
-                        onClick={() => goPage(stop.page)}
-                        className={state.page === stop.page ? "here" : ""}
-                      >
-                        <span>p.{stop.page}</span>
-                        <strong>{stop.label}</strong>
-                        {stop.why && <small>{stop.why}</small>}
-                      </button>
-                    ))
-                  ) : (
-                    <p>报告尚未提供阅读路线。</p>
-                  )}
-                </section>
-              ))}
-            </div>
-          )}
+          <div className="sidebar-scroll" ref={setOutlineEl} hidden={!!outline} />
         </aside>
         <div
           className={"reader-split view-" + shown + (resizing ? " resizing" : "")}

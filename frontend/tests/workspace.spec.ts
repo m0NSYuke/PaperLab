@@ -77,12 +77,10 @@ test("demo paper: library, PDF text layer, math, evidence, prompt, notes persist
   await page.getByRole("button", { name: "查找", exact: true }).click();
   await expect(page.locator(".pdf-notice")).toContainText("未匹配到原句");
   await expect(page.getByLabel("PDF 页码")).toHaveValue("2");
-  // Wide screens open the sidebar on 论文结构; the PDF bookmarks are one tab over.
-  await expect(page.getByLabel("论文结构")).toBeVisible();
-  await page.getByRole("tab", { name: "目录" }).click();
-  await expect(page.locator(".pdf-outline")).toBeVisible();
+  // Wide screens open the sidebar on the paper's table of contents; folding it leaves a rail.
+  await expect(page.getByRole("navigation", { name: "论文目录", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "论文目录", exact: true }).click();
-  await expect(page.locator(".pdf-outline")).toBeHidden();
+  await expect(page.getByRole("navigation", { name: "论文目录（已收起）" })).toBeVisible();
   const beforeZoom = (await page
     .locator('.pdfViewer .page[data-page-number="2"]')
     .boundingBox())!.width;
@@ -566,20 +564,31 @@ test("tags, papers and lines: add, rename and delete tags; delete a paper and un
   expect(exceptions).toEqual([]);
 });
 
-test("论文结构 sidebar: the report outline beside the PDF jumps to each section", async ({ page }) => {
+test("论文目录 sidebar: numbered sections, folded notes and a rail when collapsed", async ({ page }) => {
   const exceptions: string[] = [];
   page.on("pageerror", (e) => exceptions.push(e.message));
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(demo.route);
   await expect(page.locator(".pdfViewer .page canvas").first()).toBeVisible({ timeout: 30000 });
-  const structure = page.getByLabel("论文结构");
-  await expect(structure.locator("button")).toHaveCount(6);
-  await expect(structure).toContainText("核心方法");
-  await expect(structure.locator("button.key")).toHaveCount(2);
-  await structure.locator("button", { hasText: "4 Limitations" }).click();
+  const toc = page.getByRole("navigation", { name: "论文目录", exact: true });
+  await expect(toc.locator(".toc-chapter")).toHaveCount(6);
+  await expect(toc.locator(".paper-toc-key")).toHaveCount(2);
+  // Notes stay folded until asked for; formulas in them render as math.
+  await expect(toc.locator(".paper-toc-note")).toHaveCount(0);
+  await toc.getByRole("button", { name: "展开说明 3 Experiments" }).click();
+  await expect(toc.locator(".paper-toc-note")).toContainText("主结果");
+  await expect(toc.locator(".paper-toc-note .katex").first()).toBeVisible();
+  await toc.locator(".toc-chapter-link", { hasText: "4 Limitations" }).click();
   await expect(page.getByLabel("PDF 页码")).toHaveValue("3");
-  await expect(structure.locator("button.here")).toContainText("5 Conclusion");
-  // Formulas in summaries render as math, not as raw LaTeX.
-  await expect(structure.locator(".katex").first()).toBeVisible();
+  await expect(toc.locator("li.here")).toContainText("5 Conclusion");
+  // Folded: one tick per section, still jumps.
+  await page.getByRole("button", { name: "论文目录", exact: true }).click();
+  const rail = page.getByRole("navigation", { name: "论文目录（已收起）" });
+  await expect(rail.locator("button:not(.rail-open)")).toHaveCount(6);
+  await rail.getByRole("button", { name: "2 Method" }).click();
+  await expect(page.getByLabel("PDF 页码")).toHaveValue("2");
+  await rail.getByRole("button", { name: "展开论文目录" }).click();
+  await expect(toc).toBeVisible();
   expect(exceptions).toEqual([]);
 });
+
